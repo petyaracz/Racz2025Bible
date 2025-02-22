@@ -34,7 +34,7 @@ file_name = list.files(my_url)
 
 # which translations have the Gospels (and not revised translations of Karoli or Kaldi)
 gospels = matcher |> 
-  filter(file_name %in% c("MunchK", "Jordk", "Pesti", "Sylvester", "Heltai", "Karoli", "Kaldi", "Aranyos", "RUF"))
+  filter(file_name %in% c("MunchK", "Jordk", "Pesti", "Sylvester", "Heltai", "Karoli", "Kaldi", "RUF"))
 
 # make long
 gospels = gospels |> 
@@ -103,4 +103,4 @@ gospel_texts |>
 
 # -- write -- #
 
-write_tsv(gospel_texts, 'dat/gospels.tsv')
+write_tsv(gospel_texts, 'dat/gospels.gz')

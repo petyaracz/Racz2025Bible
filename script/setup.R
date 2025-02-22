@@ -1,3 +1,5 @@
+# load gospel file (output of source.R) create bigram and trigram informativity across books and create information stats across verses (not lines!), write to files
+
 # -- head -- #
 
 library(tidyverse)
@@ -66,129 +68,62 @@ calc3 = partial(calculateNgramInformativity, n = 3)
 
 # -- read -- #
 
-d = read_tsv('dat/gospels.tsv')
+d = read_tsv('dat/gospels.gz')
 
 # -- setup -- #
 
-d2 = d |> 
-  filter(target_text)
+d = d |> 
+  select(translation,year,description,type,book,verse,line,text)
 
-d3 = d |> 
-  filter(
-    type == 'normalised' | (translation %in% c('Aranyos','RUF') & type == 'modern')
-  )
-
-# -- informativity and perplexity -- #
+# -- informativity -- #
 
 # bigram and trigram informativity
 
-infos = d2 |> 
-  select(translation,year,book,verse,line,text) |> 
-  nest(.by = c(translation,year,book)) |> 
+infos = d |> 
+  nest(.by = c(translation,year,book,type)) |> 
   mutate(
     info2 = map(data, calc2),
     info3 = map(data, calc3)
   )
 
 infos2 = infos |> 
-  select(translation,year,book,info2) |> 
   unnest(info2)
 
 infos3 = infos |> 
-  select(translation,year,book,info3) |> 
   unnest(info3)
 
-## normalised
+# -- entropy and perplexity -- #
 
-# perplexity
-
-ed = d2 |> 
-  select(translation,year,book,verse,line,text) |> 
+ed = d |> 
   unnest_tokens(word, text, drop = F) |> 
-  nest(.by = c(translation,year,book,verse)) |> 
+  nest(.by = c(translation,year,description,type,book,verse)) |> 
   mutate(
     entropy_data = map(data, calculateEntropy)
   ) |> 
-  select(translation,year,book,verse,entropy_data) |> 
+  select(translation,year,type,book,verse,entropy_data) |> 
   unnest(entropy_data)
 
+# -- descriptive stats -- #
+
 # word count and avg word length
-id = d2 |> 
-  select(translation,year,book,verse,line,text) |> 
+id = d |> 
   unnest_tokens(word, text, drop = F) |> 
   summarise(
     wc = n(),
     avg_word_length = mean(nchar(word)),
     type_count = n_distinct(word),
     type_token_ratio = type_count / wc,
-    .by = c(translation,year,book,verse)
-  )
-
-## facsimile
-
-# perplexity
-
-ed2 = d3 |> 
-  select(translation,year,book,verse,line,text) |> 
-  unnest_tokens(word, text, drop = F) |> 
-  nest(.by = c(translation,year,book,verse)) |> 
-  mutate(
-    entropy_data = map(data, calculateEntropy)
-  ) |> 
-  select(translation,year,book,verse,entropy_data) |> 
-  unnest(entropy_data)
-
-# word count and avg word length
-id2 = d3 |> 
-  select(translation,year,book,verse,line,text) |> 
-  unnest_tokens(word, text, drop = F) |> 
-  summarise(
-    wc = n(),
-    avg_word_length = mean(nchar(word)),
-    type_count = n_distinct(word),
-    type_token_ratio = type_count / wc,
-    .by = c(translation,year,book,verse)
+    .by = c(translation,year,description,type,book,verse)
   )
 
 # -- combine -- #
 
-ed = ed |> 
-  rename(
-    'entropy_normalised' = entropy,
-    'perplexity_normalised' = perplexity
-  )
-
-ed2 = ed2 |> 
-  rename(
-    'entropy_original' = entropy,
-    'perplexity_original' = perplexity
-  )
-
-id = id |> 
-  rename(
-    'wc_normalised' = wc,
-    'avg_word_length_normalised' = avg_word_length,
-    'type_count_normalised' = type_count,
-    'type_token_ratio_normalised' = type_token_ratio
-  )
-
-id2 = id2 |> 
-  rename(
-    'wc_original' = wc,
-    'avg_word_length_original' = avg_word_length,
-    'type_count_original' = type_count,
-    'type_token_ratio_original' = type_token_ratio
-  )
-
-combined = d |> 
-  distinct(translation,year,description) |> 
-  left_join(ed) |> 
-  left_join(ed2) |> 
+combined = ed |> 
   left_join(id) |> 
-  left_join(id2)
+  relocate(description, .after = year)
 
 # -- write -- #
 
-write_tsv(infos2, 'dat/gospel_bigram_informativity.tsv')
-write_tsv(infos3, 'dat/gospel_trigram_informativity.tsv')
+write_tsv(infos2, 'dat/gospel_bigram_informativity.gz')
+write_tsv(infos3, 'dat/gospel_trigram_informativity.gz')
 write_tsv(combined, 'dat/gospel_entropy.tsv')
