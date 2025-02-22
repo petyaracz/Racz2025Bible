@@ -3,22 +3,20 @@
 library(tidyverse)
 library(tidytext)
 library(glue)
-library(ggrain)
-library(ggthemes)
-library(patchwork)
 
 setwd('~/Github/Racz2025Bible/')
 
 # -- fun -- #
 
 # take df, calculate bigrams across normalised, return info
+# colname is hard coded! I'm so sorry
 calculateNgramInformativity = function(df, n) {
   stopifnot(n > 1)  # Ensure n is greater than 1
   
   # Create n-grams
   ngrams = df |>
-    select(normalised) |> 
-    unnest_tokens(ngram, normalised, token = "ngrams", n = n)
+    select(text) |> 
+    unnest_tokens(ngram, text, token = "ngrams", n = n)
   
   # Separate the n-grams into individual words
   words = paste0("word", 1:n)
@@ -52,43 +50,32 @@ calc3 = partial(calculateNgramInformativity, n = 3)
 
 # -- read -- #
 
-d = read_tsv('dat/karoli_evangelium_tokenised.tsv')
+d = read_tsv('dat/gospels.tsv')
+
+# -- setup -- #
+
+d = d |> 
+  filter(target_text)
 
 # -- info -- #
 
 infos = d |> 
-  mutate(
-    book_length = n(),
-    .by = book
-  ) |> 
-  mutate(
-    book2 = glue('{book} ({book_length})')
-  ) |> 
-  nest(.by = c(book,book2)) |> 
+  select(translation,year,book,verse,line,text) |> 
+  nest(.by = c(translation,year,book)) |> 
   mutate(
     info2 = map(data, calc2),
     info3 = map(data, calc3)
   )
 
-infos |> 
-  mutate(book2 = fct_relevel(book2, "Mk (12261)", "Jn (15720)", "Mt (19234)", "Lk (20968)")) |> 
-  unnest(info2) |> 
-  ggplot(aes(book2,information)) +
-  geom_violin() +
-  geom_boxplot(width = .1) +
-  theme_minimal() +
-  ggtitle('bigram információ a Károli bibliában') +
-  scale_x_discrete(labels = c('Márk (12e)', 'János (16e)', 'Máté (19e)', 'Lukács (21e)'), name = 'Evangélium (szavak száma)') + 
-  ylab('információ')
-  
-  infos |> 
-    mutate(book2 = fct_relevel(book2, "Mk (12261)", "Jn (15720)", "Mt (19234)", "Lk (20968)")) |> 
-  unnest(info3) |> 
-    ggplot(aes(book2,information)) +
-    geom_violin() +
-    geom_boxplot(width = .1) +
-    theme_minimal() +
-    ggtitle('trigram információ a Károli bibliában') +
-    scale_x_discrete(labels = c('Márk (12e)', 'János (16e)', 'Máté (19e)', 'Lukács (21e)'), name = 'Evangélium (szavak száma)') + 
-    ylab('információ') +
-    coord_cartesian(ylim = c(0,2.5))
+infos2 = infos |> 
+  select(translation,year,book,info2) |> 
+  unnest(info2)
+
+infos3 = infos |> 
+  select(translation,year,book,info3) |> 
+  unnest(info3)
+
+# -- write -- #
+
+write_tsv(infos2, 'dat/gospel_bigram_informativity.tsv')
+write_tsv(infos3, 'dat/gospel_trigram_informativity.tsv')

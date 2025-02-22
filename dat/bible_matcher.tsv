@@ -1,0 +1,15 @@
+file_name	year	description
+BecsiK	1450	Bécsi kódex, Keletkezési idő: 15. sz. középső harmada, Forrás: Ómagyar korpusz, Bibliai részek: Rut könyve, Judit könyve, Eszter könyve, Báruk könyve, Dániel könyve, Ozeás könyve, Joel könyve, Ámosz könyve, Abdiás könyve, Jónás könyve, Mikeás könyve, Náhum könyve, Habakuk könyve, Szofoniás könyve, Aggeus könyve, Zakariás könyve, Malakiás könyve, Makkabeusok II. könyve, Szövegtípus: betűhű, normalizált
+MunchK	1466	Müncheni kódex, Keletkezési idő: 1466, Forrás: Ómagyar korpusz, Bibliai részek: Máté evangéliuma, Márk evangéliuma, Lukács evangéliuma, János evangéliuma, Szövegtípus: betűhű, normalizált
+AporK	1499	Apor-kódex, Keletkezési idő: 15. sz. vége – 16. sz. eleje, Forrás: Ómagyar korpusz, Bibliai részek: Kivonulás könyve, Sámuel I. könyve, Zsoltárok könyve, Izajás könyve, Dániel könyve, Habakuk könyve; Lukács evangéliuma, Szövegtípus: betűhű, normalizált
+JordK	1516	Jordánszky-kódex, Keletkezési idő: 1516–19, Forrás: Ómagyar korpusz, Bibliai részek: Máté evangéliuma, Márk evangéliuma, Lukács evangéliuma, János evangéliuma, Apostolok cselekedetei, Zsidóknak írt levél, Jakab levele, Péter 1. levele, Péter 2. levele, János 1. levele, János 2. levele, János 3. levele, Júdás levele, Jelenések könyve, Szövegtípus: betűhű, normalizált
+Pesti	1536	Pesti Gábor: Újtestamentum, Keletkezési idő: 1536, Forrás: Ómagyar Korpusz, Bibliai részek: Máté evangéliuma, Márk evangéliuma, Lukács evangéliuma, János evangéliuma, Szövegtípus: betűhű, normalizált
+Sylvester	1541	Sylvester János: Újtestamentum, Keletkezési idő: 1541, Forrás: Ómagyar Korpusz, Bibliai részek: Újszövetség, Szövegtípus: betűhű, normalizált
+Heltai	1565	Heltai Gáspár: Újtestamentum, Keletkezési idő: 1565, Forrás: Ómagyar Korpusz, Bibliai részek: Újszövetség, Szövegtípus: betűhű, normalizált
+Karoli	1590	Károli Gáspár Vizsolyi Bibliája, Keletkezési idő: 1590, Forrás: Ómagyar Korpusz, Bibliai részek: Újszövetség, Szövegtípus: betűhű, normalizált
+Kaldi	1626	Káldi György fordítása, Keletkezési idő: 1626, Forrás: Ómagyar Korpusz, Bibliai részek: Újszövetség, Szövegtípus: betűhű, normalizált
+Aranyos	1685	Misztótfalusi Kis Miklós Aranyos Bibliája, Keletkezési idő: 1685, Forrás: Arcanum: Biblia Téka, Bibliai részek: teljes, Szövegtípus: az Arcanum által "normalizált"
+KaroliRevid	1908	Károli Gáspár revideált fordítása, Keletkezési idő: 1908, Forrás: szentiras.hu, Bibliai részek: teljes, Szövegtípus: modern kori
+KaldiNeo	1997	Káldi Neovulgáta, Keletkezési idő: 1997, Forrás: szentiras.hu, Bibliai részek: teljes, Szövegtípus: modern kori
+SzIT	2003	Szent István Társulati Biblia, Keletkezési idő: 2003, Forrás: szentiras.hu, Bibliai részek: teljes, Szövegtípus: modern kori
+RUF	2014	Magyar Bibliatársulat újfordítású Bibliája, Keletkezési idő: 2014, Forrás: szentiras.hu, Bibliai részek: teljes, Szövegtípus: modern kori
