@@ -1,0 +1,3 @@
+- check numbers for original and normalised
+- plot perplexity / wc / type token / word length x original / normalised and STARE AT IT
+- modelling fun
