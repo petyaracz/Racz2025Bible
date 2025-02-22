@@ -3,6 +3,7 @@
 library(tidyverse)
 library(tidytext)
 library(glue)
+library(entropy)
 
 setwd('~/Github/Racz2025Bible/')
 
@@ -45,6 +46,21 @@ calculateNgramInformativity = function(df, n) {
   return(ngram_probabilities)
 }
 
+# Function to calculate Shannon entropy
+calculateEntropy = function(df) {
+  df |>
+    # calculate the frequency of each word
+    count(word) |> 
+    # convert to p 
+    mutate(
+      p = n / sum(n)
+    ) |> 
+    summarise(
+      entropy = entropy(p, unit = "log2"),
+      perplexity = 2^entropy
+    )
+}
+
 calc2 = partial(calculateNgramInformativity, n = 2)
 calc3 = partial(calculateNgramInformativity, n = 3)
 
@@ -57,7 +73,9 @@ d = read_tsv('dat/gospels.tsv')
 d = d |> 
   filter(target_text)
 
-# -- info -- #
+# -- informativity and perplexity -- #
+
+# bigram and trigram informativity
 
 infos = d |> 
   select(translation,year,book,verse,line,text) |> 
@@ -75,7 +93,43 @@ infos3 = infos |>
   select(translation,year,book,info3) |> 
   unnest(info3)
 
+# perplexity
+
+proba = d |> 
+  filter(translation == 'MunchK', book == 'Mt', verse == 1) |> 
+  unnest_tokens(word, text, drop = F)
+
+ed = d |> 
+  select(translation,year,book,verse,line,text) |> 
+  unnest_tokens(word, text, drop = F) |> 
+  nest(.by = c(translation,year,book,verse)) |> 
+  mutate(
+    entropy_data = map(data, calculateEntropy)
+  ) |> 
+  select(translation,year,book,verse,entropy_data) |> 
+  unnest(entropy_data)
+
+# word count and avg word length
+id = d |> 
+  select(translation,year,book,verse,line,text) |> 
+  unnest_tokens(word, text, drop = F) |> 
+  summarise(
+    wc = n(),
+    avg_word_length = mean(nchar(word)),
+    type_count = n_distinct(word),
+    type_token_ratio = type_count / wc,
+    .by = c(translation,year,book,verse)
+  )
+
+# -- combine -- #
+
+eid = d |> 
+  distinct(translation,year,description) |> 
+  left_join(ed) |> 
+  left_join(id)
+
 # -- write -- #
 
 write_tsv(infos2, 'dat/gospel_bigram_informativity.tsv')
 write_tsv(infos3, 'dat/gospel_trigram_informativity.tsv')
+write_tsv(eid, 'dat/gospel_entropy.tsv')

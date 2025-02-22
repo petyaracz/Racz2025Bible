@@ -1,58 +1,82 @@
 # -- head -- #
 
 library(tidyverse)
-library(lme4)
+library(broom)
+library(rstanarm)
 library(performance)
 library(sjPlot)
+library(bayesplot)
+library(tidybayes)
 library(ggthemes)
 
 setwd('~/Github/Racz2025Bible/')
 
 # -- read -- #
 
-info2 = read_tsv('dat/gospel_bigram_informativity.tsv')
+d = read_tsv('dat/gospel_entropy.tsv')
 
 # -- setup -- #
 
-info2 = info2 |> 
+d = d |> 
   mutate(
-    translation = translation |> 
-      fct_reorder(year) |> 
-      ordered()
+    work = description |> 
+      str_extract('^.*(?=, Forrás)') |> 
+      str_replace(' Keletkezési idő:', '') |> 
+      fct_reorder(-year)
   )
-
-frequent_words = info2 |> 
-  count(word2, sort = T) |> 
-  slice(1:50)
-
-info2s = info2 |> 
-  filter(word2 %in% frequent_words$word2)
 
 # -- fit -- #
 
 # lm
-fit1 = lm(information ~ translation, data = mark)
-fit2 = lm(information ~ 1, data = mark)
+fit1 = stan_glm(perplexity ~ 1, data = d, cores = 4)
+fit2 = stan_glm(perplexity ~ book, data = d, cores = 4)
+fit3 = stan_glm(perplexity ~ work, data = d, cores = 4)
+fit4 = stan_glm(perplexity ~ work + book, data = d, cores = 4)
+fit5 = stan_glm(perplexity ~ work * book, data = d, cores = 4)
 
-plot(compare_performance(fit1,fit2, metrics = 'common'))
-plot_model(fit1, 'pred', terms = 'translation') +
-  theme_bw()
-check_model(fit1)
+loo1 = loo(fit1)
+loo2 = loo(fit2)
+loo3 = loo(fit3)
+loo4 = loo(fit4)
+loo5 = loo(fit5)
 
-# lm: translation, book
-fit3 = lm(information ~ book, data = info2)
-fit4 = lm(information ~ translation + book, data = info2)
-fit5 = lm(information ~ translation * book, data = info2)
-plot(compare_performance(fit3,fit4,fit5, metrics = 'common'))
+loo_compare(loo1,loo2,loo3,loo4,loo5)
 
-plot_model(fit4, 'pred', terms = 'translation') +
-  theme_bw()
-plot_model(fit4, 'pred', terms = 'book') +
-  theme_bw()
+plot_model(fit4, 'pred', terms = 'work') +
+  theme_bw() +
+  coord_flip()
 
-# extremely suspect:
-# fit6 = lm(information ~ translation + book, data = info2s)
-# fit7 = lmer(information ~ translation + book + (1|word2), data = info2s)
-# fit8 = lmer(information ~ translation + book + (1 + translation|word2), data = info2s)
-# 
-# plot(compare_performance(fit6,fit7,fit8, metrics = 'common'))
+# Grab order
+works = d |> 
+  distinct(work,year) |> 
+  rename(variable = work)
+
+# Figure out what the hell the names of the parameters are
+variable_names = colnames(as.matrix(fit4))
+
+# Filter the variable names to get only those related to `work`
+work_variables = variable_names[str_detect(variable_names, "^work")]
+
+# Extract the draws for the `work` variables using spread_draws
+draws_work = fit4 |> 
+  gather_draws(!!!rlang::syms(work_variables)) |> 
+  mutate(
+    value = .value,
+    variable = str_replace(.variable, 'work', '')
+  ) |> 
+  ungroup() |> # nem hiszem el tenyleg
+  left_join(works) |> 
+  select(variable,year,value) |> 
+  mutate(variable = fct_reorder(variable, -year))
+
+# Plot the effect of `work`# Plot the effeyearct of `work`
+ggplot(draws_work, aes(x = value, y = variable)) +
+  stat_halfeye() +
+  theme_bw() +
+  geom_vline(xintercept = 0, lty = 3) +
+  labs(title = "Bibliai versek zavarodottságfüggvénye\na fordítások között,\n2014-hez képest",
+       y = "",
+       x = "Sűrűség")
+
+ggsave('viz/perplexity_model.png', width = 6, height = 6, dpi = 900)
+
