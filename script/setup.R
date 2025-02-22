@@ -70,14 +70,19 @@ d = read_tsv('dat/gospels.tsv')
 
 # -- setup -- #
 
-d = d |> 
+d2 = d |> 
   filter(target_text)
+
+d3 = d |> 
+  filter(
+    type == 'normalised' | (translation %in% c('Aranyos','RUF') & type == 'modern')
+  )
 
 # -- informativity and perplexity -- #
 
 # bigram and trigram informativity
 
-infos = d |> 
+infos = d2 |> 
   select(translation,year,book,verse,line,text) |> 
   nest(.by = c(translation,year,book)) |> 
   mutate(
@@ -93,13 +98,11 @@ infos3 = infos |>
   select(translation,year,book,info3) |> 
   unnest(info3)
 
+## normalised
+
 # perplexity
 
-proba = d |> 
-  filter(translation == 'MunchK', book == 'Mt', verse == 1) |> 
-  unnest_tokens(word, text, drop = F)
-
-ed = d |> 
+ed = d2 |> 
   select(translation,year,book,verse,line,text) |> 
   unnest_tokens(word, text, drop = F) |> 
   nest(.by = c(translation,year,book,verse)) |> 
@@ -110,7 +113,33 @@ ed = d |>
   unnest(entropy_data)
 
 # word count and avg word length
-id = d |> 
+id = d2 |> 
+  select(translation,year,book,verse,line,text) |> 
+  unnest_tokens(word, text, drop = F) |> 
+  summarise(
+    wc = n(),
+    avg_word_length = mean(nchar(word)),
+    type_count = n_distinct(word),
+    type_token_ratio = type_count / wc,
+    .by = c(translation,year,book,verse)
+  )
+
+## facsimile
+
+# perplexity
+
+ed2 = d3 |> 
+  select(translation,year,book,verse,line,text) |> 
+  unnest_tokens(word, text, drop = F) |> 
+  nest(.by = c(translation,year,book,verse)) |> 
+  mutate(
+    entropy_data = map(data, calculateEntropy)
+  ) |> 
+  select(translation,year,book,verse,entropy_data) |> 
+  unnest(entropy_data)
+
+# word count and avg word length
+id2 = d3 |> 
   select(translation,year,book,verse,line,text) |> 
   unnest_tokens(word, text, drop = F) |> 
   summarise(
@@ -123,13 +152,43 @@ id = d |>
 
 # -- combine -- #
 
-eid = d |> 
+ed = ed |> 
+  rename(
+    'entropy_normalised' = entropy,
+    'perplexity_normalised' = perplexity
+  )
+
+ed2 = ed2 |> 
+  rename(
+    'entropy_original' = entropy,
+    'perplexity_original' = perplexity
+  )
+
+id = id |> 
+  rename(
+    'wc_normalised' = wc,
+    'avg_word_length_normalised' = avg_word_length,
+    'type_count_normalised' = type_count,
+    'type_token_ratio_normalised' = type_token_ratio
+  )
+
+id2 = id2 |> 
+  rename(
+    'wc_original' = wc,
+    'avg_word_length_original' = avg_word_length,
+    'type_count_original' = type_count,
+    'type_token_ratio_original' = type_token_ratio
+  )
+
+combined = d |> 
   distinct(translation,year,description) |> 
   left_join(ed) |> 
-  left_join(id)
+  left_join(ed2) |> 
+  left_join(id) |> 
+  left_join(id2)
 
 # -- write -- #
 
 write_tsv(infos2, 'dat/gospel_bigram_informativity.tsv')
 write_tsv(infos3, 'dat/gospel_trigram_informativity.tsv')
-write_tsv(eid, 'dat/gospel_entropy.tsv')
+write_tsv(combined, 'dat/gospel_entropy.tsv')
