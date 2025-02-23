@@ -1,1 +1,2 @@
 add neoKaroli and SzINT as two modern references.
+fix https://github.com/nytud/parallelbible/issues/1

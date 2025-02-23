@@ -46,11 +46,10 @@ drawCor = function(d_cor,col1,col2){
 # take pred object and predictor name (see setup below) return plot
 drawPred = function(pred,col1){
   pred |> 
-    ggplot(aes({{col1}},value,colour = name)) +
+    ggplot(aes({{col1}},value)) +
     geom_point(alpha = .25) +
     geom_smooth() +
-    scale_colour_viridis_d(option = 'H') +
-    scale_fill_viridis_d(option = 'H') +
+    facet_wrap( ~ name, nrow = 1) +
     theme_bw() +
     theme(axis.title.y = element_blank())
 }
@@ -257,15 +256,15 @@ p13 = drawPred(pred1, perplexity) +
 p14 = drawPred(pred2, perplexity) +
   ggtitle('predicted work: normalised texts')
 
-p15 = drawPred(pred1, wc)
+p15 = drawPred(pred1, wc) + xlab('word count')
 
-p16 = drawPred(pred2, wc)
+p16 = drawPred(pred2, wc) + xlab('word count')
 
-p17 = drawPred(pred1, type_token_ratio)
+p17 = drawPred(pred1, type_token_ratio) + xlab('type / token')
 
-p18 = drawPred(pred2, type_token_ratio)
+p18 = drawPred(pred2, type_token_ratio) + xlab('type / token')
 
-pred_plot = wrap_plots(p13,p15,p17,p14,p16,p18, nrow = 2) + plot_layout(guides = 'collect') & theme(legend.position = 'left')
+pred_plot = wrap_plots(p13,p15,p17,p14,p16,p18, ncol = 1) + plot_layout(guides = 'collect') & theme(legend.position = 'left')
 
 # -- draw -- #
 
@@ -276,4 +275,4 @@ cor_plot
 ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 5.28)
 
 pred_plot
-ggsave('viz/gospel_preds.png', dpi = 900, width = 9, height = 6)
+ggsave('viz/gospel_preds.png', dpi = 900, width = 15, height = 12)
