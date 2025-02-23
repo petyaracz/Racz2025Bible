@@ -101,29 +101,3 @@ Pintér, Tibor M. Online segédletek a magyar nyelvű bibliafordítások olvasá
 
 Pintér, Tibor M. Magyar nyelvű bibliafordítások statisztikai elemzése. (2024). Alkalmazott Nyelvtudomány, Különszám, 2024/1. szám, 22–36. DOI: 10.18460/ANY.K.2024.1.002
 
-Dömötör, A. (2013). A Müncheni Kódex keletkezéstörténete és nyelvi sajátságai. Nyelvtudományi Közlemények, 114(2), 145–162.  
-
-Török, K. (1992). Pesti Gábor és az első magyar nyelvű Újszövetség. Magyar Könyvszemle, 108(3), 359–376.  
-
-Borsodi, L. (1985). Sylvester János Újtestamentum-fordításának kulturális jelentősége. Irodalomtörténeti Közlemények, 89(2), 205–217.  
-
-Papp, B. (1977). Heltai Gáspár és az erdélyi magyar reformáció kulturális hatásai. Református Szemle, 70(3), 125–139. 
-
-Szabó, A. (1990). A Vizsolyi Biblia szerepe a korai újkori magyar nyelv és kultúra fejlődésében. Magyar Nyelv, 86(1), 27–42.  
-
-Monok, I. (1995). Káldi György bibliafordításának vallási és kulturális kontextusa. Irodalomtörténet, 77(3–4), 347–359.  
-
-Nagy, G. (2016). A Magyar Bibliatársulat újfordítású Bibliájának teológiai és nyelvi kihívásai. Theologiai Szemle, 59(2), 93–106.  
-
-Szakály, F. (1976). Magyarország népessége a török hódoltság idején [Hungary’s Population in the Age of Ottoman Occupation]. Történelmi Szemle, 19(4), 673–699.  
-
-Tóth, I. Gy. (2000). Demográfiai és társadalmi átalakulások Magyarországon a 16–17. században [Demographic and Social Transformations in 16th–17th Century Hungary]. Aetas, 15(3), 23–45.  
-
-Papp, K. (1995). A három részre szakadt ország kulturális élete [Cultural Life in the Partitioned Kingdom]. Századok, 129(2), 201–216.  
-
-Kalmár, J. (2007). A reformáció hatása a magyar művelődésre és nyelvre [The Impact of the Reformation on Hungarian Culture and Language]. Irodalomtörténeti Közlemények, 111(4), 601–615.  
-
-Borsodi, L. (2012). A reneszánsz és a humanizmus hatása a 16. századi magyar elitekre [The Impact of the Renaissance and Humanism on the 16th-Century Hungarian Elites]. Korall, 46(3), 69–86.  
-
-Lázár, G. (2018). Katolikus és protestáns együttélés a kora újkori Magyarországon [Catholic–Protestant Coexistence in Early Modern Hungary]. Acta Historica, 154(2), 143–158.  
-
