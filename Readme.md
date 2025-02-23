@@ -64,7 +64,7 @@ Text is either original / facsimile or normalised. Here's Mark 6:11.
 |----------|------------|---------|
 | ⁊ valakic nē ſogadandnac tu̇to̗ket  onnan ki mènuen leraʒiatoc a· poꝛt tu̇ labatocꝛol o̗ nèkic tanoſagoca / | és valakik nem fogadnak titeket , onnan kimenvén lerázzátok a port ti lábatokról őnekik tanúságukra . | And if any place will not welcome you or listen to you, leave that place and shake the dust off your feet as a testimony against them. |
 
-For the 2014 translation, the two are the same.
+For the modern translations, the two are the same.
 
 We calculate the perplexity of individual verses in the four Books of the Gospel across translations for original / normalised.
 
