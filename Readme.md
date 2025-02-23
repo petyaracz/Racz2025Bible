@@ -84,3 +84,16 @@ Measures correlate for original and normalised, but this varies across translati
 We fit a LM predicting perplexity ~ translation * wc + book. (best model according to LOO)
 
 ![Fitted](viz/gospel_preds.png)
+
+## Bibliography
+
+Pintér, Tibor M. Online segédletek a magyar nyelvű bibliafordítások olvasásához. Modern Nyelvoktatás 27, no. 3-4 (2021): 43-57. DOI: 10.51139/monye.2021.3-4.43.57
+
+Pintér, Tibor M. Magyar nyelvű bibliafordítások statisztikai elemzése. (2024). Alkalmazott Nyelvtudomány, Különszám, 2024/1. szám, 22–36. DOI: 10.18460/ANY.K.2024.1.002
+
+Simon, Eszter and Ágnes Kalivoda. A Párhuzamos Bibliakorpusz és Bibliaolvasó fejlesztése. In Általános Nyelvészeti Tanulmányok XXXII., edited by István Kenesei, Éva Dékány, Tamás Halm, and Balázs Surányi. Budapest: Akadémiai Kiadó, 2020.
+
+Simon, Eszter and Bálint Sass. Nyelvtechnológia és kulturális örökség, avagy korpuszépítés ómagyar kódexekből. (2018). Általános Nyelvészeti Tanulmányok XXIV. Bp: Akadémiai kiadó.
+
+Vadász, Noémi, and Eszter Simon. Normo: egy automatikus normalizáló eszköz középmagyar szövegekhez. In Proceedings of the 14th Magyar Számítógépes Nyelvészeti Konferencia (Szeged, 2018), 135–145. ISBN 978-963-306-578-5. http://acta.bibl.u-szeged.hu/id/eprint/59040.
+
