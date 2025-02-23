@@ -23,8 +23,6 @@ Tetszék énnékem is, ki eleitől fogva mindeneknek szorgalmasan végére járt
 	- bible_matcher.tsv: descriptions from https://parallelbible.nytud.hu/
 	- gospel_entropy.tsv: entropies and other information stats across verses
 	- gospels.gz: combined gospel texts
-	- gospel_bigram_informativity.gz: bigram informativity across gospel verses
-	- gospel_trigram_informativity.gz: trigram ~
 - script
 	- model.R: fit stan models
 	- setup.R: add info measures to gospels.gz
