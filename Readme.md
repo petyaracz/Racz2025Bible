@@ -67,11 +67,11 @@ We calculate the perplexity of individual verses in the four Books of the Gospel
 
 Perplexity is an exponential function of entropy.
 
-[ \text{Perplexity} = 2^{\text{entropy}} ]
+$\text{Perplexity} = 2^{\text{entropy}}$
 
 Entropy is a measure of the unpredictability of a text. Sort of.
 
-[ H(X) = - \sum_{i=1}^{n} P(x_i) \log_2 P(x_i) ]
+$H(X) = - \sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$
 
 Entropy is shaped by the size of the underlying vocabulary and text size. So we need to keep an eye on the length of verses.
 
