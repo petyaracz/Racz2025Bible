@@ -86,6 +86,11 @@ d2b = d2 |>
 d_cor = left_join(d1b,d2b) |> 
   mutate(work = fct_rev(work)) # I need these in this order here
 
+# -- models -- #
+
+fit0 = multinom(work ~ perplexity + wc + type_token_ratio, data = d1)
+fit4 = multinom(work ~ perplexity + wc + type_token_ratio, data = d2)
+
 # -- viz: info -- #
 
 info2 |> 
@@ -215,46 +220,44 @@ cor_plot = (p9 + p10) / (p11 + p12) + plot_layout(guides = "collect") & theme(le
 
 # -- viz: preds -- #
 
-p13 = plot_model(fit6, 'pred', terms = c('wc','work')) +
-  theme_bw() +
-  scale_fill_viridis_d(option = 'H') +
+
+my_levels = as.character(unique(d$work))
+
+pred1 = fit0 |> 
+  predict(d1, type = 'probs') |> 
+  as_tibble()
+
+p13 = d1 |> 
+  select(perplexity,wc,type_token_ratio) |> 
+  bind_cols(pred1) |> 
+  pivot_longer(-c(perplexity,wc,type_token_ratio)) |> 
+  mutate(name = fct_relevel(name, my_levels)) |> 
+  ggplot(aes(perplexity,value,colour = name)) +
+  geom_point(alpha = .25) +
+  geom_smooth() +
   scale_colour_viridis_d(option = 'H') +
-  ggtitle('predicted verse\nperplexity, original')
-
-p14 = plot_model(fit6b, 'pred', terms = c('wc','work')) +
-  theme_bw() +
   scale_fill_viridis_d(option = 'H') +
+  theme_bw() +
+  ggtitle('predicted work:\noriginal texts')
+
+pred2 = fit4 |> 
+  predict(d2, type = 'probs') |> 
+  as_tibble()
+
+p14 = d2 |> 
+  select(perplexity,wc,type_token_ratio) |> 
+  bind_cols(pred2) |> 
+  pivot_longer(-c(perplexity,wc,type_token_ratio)) |> 
+  mutate(name = fct_relevel(name, my_levels)) |> 
+  ggplot(aes(perplexity,value,colour = name)) +
+  geom_point(alpha = .25) +
+  geom_smooth() +
   scale_colour_viridis_d(option = 'H') +
-  # guides(colour = 'none', fill = 'none') +
-  ggtitle('predicted verse\nperplexity, normalised')
-
-x_labels = unique(d$work)
-
-p15 = plot_model(fit6, 'pred', terms = c('work')) +
+  scale_fill_viridis_d(option = 'H') +
   theme_bw() +
-  ggtitle('predicted verse\nperplexity, original') +
-  coord_flip() +
-  ylim(160,300) +
-  scale_x_reverse(breaks = 1:7, labels = x_labels) +
-  theme(
-    axis.title.y = element_blank()
-  )
+  ggtitle('predicted work:\nnormalised texts')
 
-p16 = plot_model(fit6b, 'pred', terms = c('work')) +
-  theme_bw() +
-  ggtitle('predicted verse\nperplexity, normalised') +
-  coord_flip() +
-  ylim(160,300) +
-  scale_x_reverse(breaks = 1:7, labels = x_labels) +
-  theme(
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank(),
-    axis.title.y = element_blank()
-        )
-
-pred_plot_1 = p13 + p14 + plot_layout(guides = 'collect') & theme(legend.position = 'left')
-
-pred_plot_2 = p15 + p16
+pred_plot = p13 + p14 + plot_layout(guides = 'collect') & theme(legend.position = 'left')
 
 # -- draw -- #
 
@@ -264,8 +267,5 @@ ggsave('viz/gospel_stats.png', dpi = 900, width = 9, height = 6)
 cor_plot
 ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 5.28)
 
-pred_plot_1
-ggsave('viz/gospel_preds_1.png', dpi = 900, width = 8, height = 2.64)
-
-pred_plot_2
-ggsave('viz/gospel_preds_2.png', dpi = 900, width = 8, height = 2.64)
+pred_plot
+ggsave('viz/gospel_preds.png', dpi = 900, width = 8, height = 5.28)

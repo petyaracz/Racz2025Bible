@@ -55,7 +55,7 @@ gospel_entropy.tsv
 
 ## text densities
 
-Text is either original / facsimile or normalised. Here's Mark 6:11 in Müncheni kódex.
+Text is either original / facsimile or normalised. Here's Mark 6:11.
 
 | Original | Normalised | English |
 |----------|------------|---------|
@@ -81,11 +81,9 @@ Measures correlate for original and normalised, but this varies across translati
 
 ![Correlations](viz/gospel_stats_correlations.png)
 
-We fit a LM predicting perplexity ~ translation * wc + book. (best model according to LOO)
+We fit a multinomial LM predicting work from perplexity, verse avg word count, verse type token ratio.
 
-![Fitted, translation * wc](viz/gospel_preds_1.png)
-
-![Fitted, translation only](viz/gospel_preds_2.png)
+![Fitted](viz/gospel_preds.png)
 
 ## References
 
@@ -100,4 +98,3 @@ Vadász, Noémi, and Eszter Simon. Normo: egy automatikus normalizáló eszköz 
 Pintér, Tibor M. Online segédletek a magyar nyelvű bibliafordítások olvasásához. Modern Nyelvoktatás 27, no. 3-4 (2021): 43-57. DOI: 10.51139/monye.2021.3-4.43.57
 
 Pintér, Tibor M. Magyar nyelvű bibliafordítások statisztikai elemzése. (2024). Alkalmazott Nyelvtudomány, Különszám, 2024/1. szám, 22–36. DOI: 10.18460/ANY.K.2024.1.002
-
