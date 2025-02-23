@@ -2,6 +2,8 @@
 
 Rácz, Péter
 
+Tetszék énnékem is, ki eleitõl fogva mindeneknek szorgalmasan végére jártam, hogy azokról rendszerint írjak néked, jó Theofilus / Hogy megtudhasd azoknak a dolgoknak bizonyosságát, a melyekre taníttatál. (Lk 1:3-4)
+
 ## translations used
 
 1. Müncheni kódex, 1466                            
