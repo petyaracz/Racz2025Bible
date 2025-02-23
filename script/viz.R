@@ -46,11 +46,38 @@ drawCor = function(d_cor,col1,col2){
 # take pred object and predictor name (see setup below) return plot
 drawPred = function(pred,col1){
   pred |> 
-    ggplot(aes({{col1}},value)) +
-    geom_point(alpha = .25) +
+    ggplot(aes({{col1}},predicted_value)) +
+    # geom_point(alpha = .25) +
     geom_smooth() +
-    facet_wrap( ~ name, nrow = 1) +
-    theme_bw() +
+    facet_wrap( ~ outcome_variable, nrow = 1, labeller = as_labeller(my_labels)) +
+    theme_few() +
+    theme(axis.title.y = element_blank())
+}
+
+my_labels = c(
+"Müncheni kódex, 1466",                            
+"Pesti Gábor:\nÚjtestamentum, 1536",                
+"Sylvester János:\nÚjtestamentum, 1541",            
+"Heltai Gáspár:\nÚjtestamentum, 1565",              
+"Károli Gáspár\nVizsolyi Bibliája, 1590",           
+"Káldi György\nfordítása, 1626",                    
+"Károli Gáspár\nrevideált fordítása, 1908",         
+"Káldi Neovulgáta, 1997",                          
+"Szent István\nTársulati Biblia, 2003",             
+"Magyar Bibliatársulat\nújfordítású Bibliája, 2014"
+)
+names(my_labels) = my_levels
+
+# take pred object and predictor name (see setup below) return plot
+drawPredGroup = function(pred,col1){
+  pred |> 
+    ggplot(aes({{col1}},predicted_value,colour = outcome_variable)) +
+    # geom_point(alpha = .25) +
+    geom_smooth() +
+    scale_colour_viridis_d(option = 'viridis') +
+    scale_fill_viridis_d(option = 'viridis') +
+    theme_few() +
+    labs(colour = '', fill = '') +
     theme(axis.title.y = element_blank())
 }
 
@@ -81,7 +108,7 @@ d1b = d1 |>
   rename_with(~ paste0(., "_orig"), -c(work,year,book,verse))
 
 d2b = d2 |> 
-  filter(!translation %in% c('RUF','SzIT')) |> 
+  filter(!translation %in% c('RUF','SzIT','KaldiNeo')) |> 
   select(work,year,book,verse,perplexity,wc,avg_word_length,type_token_ratio) |> 
   rename_with(~ paste0(., "_norm"), -c(work,year,book,verse))
 
@@ -100,8 +127,8 @@ pred1 = fit0 |>
 pred1 = d1 |> 
   select(work,perplexity,wc,type_token_ratio) |> 
   bind_cols(pred1) |> 
-  pivot_longer(-c(work,perplexity,wc,type_token_ratio)) |> 
-  mutate(name = fct_relevel(name, my_levels))
+  pivot_longer(-c(work,perplexity,wc,type_token_ratio), names_to = 'outcome_variable', values_to = 'predicted_value') |> 
+  mutate(outcome_variable = fct_relevel(outcome_variable, my_levels))
 
 pred2 = fit4 |> 
   predict(d2, type = 'probs') |> 
@@ -110,8 +137,8 @@ pred2 = fit4 |>
 pred2 = d2 |> 
   select(work,perplexity,wc,type_token_ratio) |> 
   bind_cols(pred2) |> 
-  pivot_longer(-c(work,perplexity,wc,type_token_ratio)) |> 
-  mutate(name = fct_relevel(name, my_levels))
+  pivot_longer(-c(work,perplexity,wc,type_token_ratio), names_to = 'outcome_variable', values_to = 'predicted_value') |> 
+  mutate(outcome_variable = fct_relevel(outcome_variable, my_levels))
 
 # -- viz: info -- #
 
@@ -242,21 +269,33 @@ cor_plot = (p9 + p10) / (p11 + p12) + plot_layout(guides = "collect") & theme(le
 
 # -- viz: preds -- #
 
-p13 = drawPred(pred1, perplexity) +
-  ggtitle('predicted work: original texts')
+p13 = drawPredGroup(pred1, perplexity) +
+  ggtitle('predicted work:\noriginal texts') +
+  xlab('verse perplexity') +
+  xlim(90,410)
 
-p14 = drawPred(pred2, perplexity) +
-  ggtitle('predicted work: normalised texts')
+p14 = drawPredGroup(pred2, perplexity) +
+  ggtitle('predicted work:\nnormalised texts') +
+  xlab('verse perplexity') +
+  xlim(90,410)
 
-p15 = drawPred(pred1, wc) + xlab('word count')
+p15 = drawPredGroup(pred1, wc) + 
+  xlab('word count') +
+  xlim(250,1650)
+  
+p16 = drawPredGroup(pred2, wc) + 
+  xlab('word count') +
+  xlim(250,1650)
 
-p16 = drawPred(pred2, wc) + xlab('word count')
+p17 = drawPredGroup(pred1, type_token_ratio) + 
+  xlab('verse type / token') +
+  xlim(.35,.8)
 
-p17 = drawPred(pred1, type_token_ratio) + xlab('type / token')
+p18 = drawPredGroup(pred2, type_token_ratio) +
+  xlab('verse type / token') +
+  xlim(.35,.8)
 
-p18 = drawPred(pred2, type_token_ratio) + xlab('type / token')
-
-pred_plot = wrap_plots(p13,p15,p17,p14,p16,p18, ncol = 1) + plot_layout(guides = 'collect') & theme(legend.position = 'left')
+pred_plot = wrap_plots(p13,p14,p15,p16,p17,p18, ncol = 2) + plot_layout(guides = 'collect') & theme(legend.position = 'left')
 
 # -- draw -- #
 
@@ -267,4 +306,4 @@ cor_plot
 ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 6.22)
 
 pred_plot
-ggsave('viz/gospel_preds.png', dpi = 900, width = 15, height = 12)
+ggsave('viz/gospel_preds.png', dpi = 900, width = 8, height = 6.22)

@@ -11,8 +11,9 @@ Rácz, Péter
 5. Károli Gáspár Vizsolyi Bibliája, 1590           
 6. Káldi György fordítása, 1626                    
 7. Károli Gáspár revideált fordítása, 1908
-8. Szent István Társulati Biblia, 2003
-9. Magyar Bibliatársulat újfordítású Bibliája, 2014
+8. Káldi Neovulgáta, 1997 
+9. Szent István Társulati Biblia, 2003
+10. Magyar Bibliatársulat újfordítású Bibliája, 2014
 
 (Working on including the modernised Káldi translation.)
 

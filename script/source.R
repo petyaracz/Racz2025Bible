@@ -34,7 +34,7 @@ file_name = list.files(my_url)
 
 # which translations have the Gospels
 gospels = matcher |> 
-  filter(file_name %in% c("MunchK", "Jordk", "Pesti", "Sylvester", "Heltai", "Karoli", "Kaldi", "RUF", "SzIT", "KaroliRevid")) |> # "KaldiNeo" doesn't parse properly, opened issue
+  filter(file_name %in% c("MunchK", "Jordk", "Pesti", "Sylvester", "Heltai", "Karoli", "Kaldi", "RUF", "SzIT", "KaroliRevid", "KaldiNeo")) |>
   # add file name
   mutate(
     facsimile = glue('{file_name}_b.tsv'),
@@ -77,13 +77,13 @@ gospel_texts_unnested |>
 
 # -- add info -- #
 
-gospel_texts_unnested= gospel_texts_unnested |> 
+gospel_texts_unnested = gospel_texts_unnested |> 
   mutate(
     work = description |> 
       str_extract('^.*(?=, Forrás)') |> 
       str_replace('Keletkezési idő: ', ''),
-    analysis_original = type == 'facsimile' | translation %in% c('KaroliRevid','SzIT','RUF'),
-    analysis_normalised = type == 'normalised' | translation %in% c('KaroliRevid','SzIT','RUF')
+    analysis_original = type == 'facsimile' | translation %in% c('KaldiNeo', 'KaroliRevid','SzIT','RUF'),
+    analysis_normalised = type == 'normalised' | translation %in% c('KaldiNeo', 'KaroliRevid','SzIT','RUF')
   )
   
 # -- write -- #
