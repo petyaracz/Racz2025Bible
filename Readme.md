@@ -55,7 +55,7 @@ gospel_entropy.tsv
 
 ## text densities
 
-Text is either original / facsimile or normalised. Here's Mark 6:11.
+Text is either original / facsimile or normalised. Here's Mark 6:11 in Müncheni kódex.
 
 | Original | Normalised | English |
 |----------|------------|---------|
