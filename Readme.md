@@ -15,8 +15,6 @@ Rácz, Péter
 9. Szent István Társulati Biblia, 2003
 10. Magyar Bibliatársulat újfordítású Bibliája, 2014
 
-(Working on including the modernised Káldi translation.)
-
 ## structure
 
 - dat
