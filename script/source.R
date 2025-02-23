@@ -32,12 +32,9 @@ matcher = read_tsv('dat/bible_matcher.tsv')
 my_url = '~/Github/parallelbible/'
 file_name = list.files(my_url)
 
-# which translations have the Gospels (and not revised translations of Karoli or Kaldi)
+# which translations have the Gospels
 gospels = matcher |> 
-  filter(file_name %in% c("MunchK", "Jordk", "Pesti", "Sylvester", "Heltai", "Karoli", "Kaldi", "RUF"))
-
-# make long
-gospels = gospels |> 
+  filter(file_name %in% c("MunchK", "Jordk", "Pesti", "Sylvester", "Heltai", "Karoli", "Kaldi", "RUF", "SzIT", "KaroliRevid")) |> # "KaldiNeo" doesn't parse properly, opened issue
   # add file name
   mutate(
     facsimile = glue('{file_name}_b.tsv'),
@@ -46,61 +43,49 @@ gospels = gospels |>
   ) |> 
   # make long
   rename('translation' = file_name) |> # this isn't very nice :E
-  pivot_longer(-c(translation,year,description), names_to = 'type', values_to = 'file_name')
+  pivot_longer(-c(translation,year,description), names_to = 'type', values_to = 'file_name') |> 
+  filter(file.exists(glue('{my_url}{file_name}')))
 
-# check if file exists
-gospels = gospels |> 
-  mutate(
-    exists = file.exists(glue('{my_url}{file_name}')),
-    target_text = case_when(
-      translation %in% c('Aranyos', 'SzIT', 'RUF') & type == 'modern' ~ T,
-      !translation %in% c('Aranyos', 'SzIT', 'RUF') & type == 'normalised' ~ T,
-      T ~ F # yeehaa
-    )
-  ) |> 
-  filter(exists)
+# safe_readTextFilled = quietly(readTextFilled)
 # 
-# safe_readTextFilled = safely(readTextFilled)
-# 
-# gospel_texts = gospels |> 
+# gospels |>
 #   # load file
 #   mutate(
-#     data = map(file_name, ~ safe_readTextFilled(.)$result),
-#     error = map(file_name, ~ safe_readTextFilled(.)$error)
-#   )
+#     warning = map(file_name, ~ safe_readTextFilled(.)$warnings)
+#   ) |> View()
 
 gospel_texts = gospels |>
   # load file
   mutate(
     data = map(file_name, readTextFilled)
-  ) |> 
-  unnest(data) |> 
-  filter(book %in% gospel_books)
+    )
+
+gospel_texts_unnested = gospel_texts |> 
+  unnest(data) |>
+  filter(book %in% gospel_books) # this also drops misc stuff in the Gospels, like "tizenharmadik resz" in Sylvester. nice
 
 # let's check this
-# gospel_texts |>
-  # distinct(translation,type,book) |> View()
-# 
-# gospel_texts |>
+# gospel_texts_unnested |>
+# distinct(translation,type,book) |> View()
+gospel_texts_unnested |>
+  distinct(translation,type,book) |> 
+  count(translation,type) |> 
+  filter(n != 4)
+
+# gospel_texts_unnested |>
 #   distinct(book,verse) |> View()
 
-# there's a tab somewhere in there
-# Function to check if a value contains a tab character
-# contains_tab = function(x) {
-#   grepl("\t", x)
-# }
-# 
-# # Filter rows where any column contains a tab character
-# filtered_df = gospel_texts %>%
-  # filter(if_any(everything(), contains_tab))
-# 
-gospel_texts |>
-  filter(str_detect(description, '\t'))
-gospel_texts |>
-  filter(str_detect(text, '\t'))# |> pull(text) |> 
-  # str_extract('(?<=\n)..\t[0-9]+\t[0-9]+') |> 
-  # unique()
+# -- add info -- #
 
+gospel_texts_unnested= gospel_texts_unnested |> 
+  mutate(
+    work = description |> 
+      str_extract('^.*(?=, Forrás)') |> 
+      str_replace('Keletkezési idő: ', ''),
+    analysis_original = type == 'facsimile' | translation %in% c('KaroliRevid','SzIT','RUF'),
+    analysis_normalised = type == 'normalised' | translation %in% c('KaroliRevid','SzIT','RUF')
+  )
+  
 # -- write -- #
 
-write_tsv(gospel_texts, 'dat/gospels.gz')
+write_tsv(gospel_texts_unnested, 'dat/gospels.gz')

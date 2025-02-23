@@ -18,9 +18,7 @@ d = read_tsv('dat/gospel_entropy.tsv')
 
 d = d |> 
   mutate(
-    work = description |> 
-      str_extract('^.*(?=, Forrás)') |> 
-      str_replace('Keletkezési idő: ', '') |> 
+    work = work |> 
       fct_reorder(year),
     work_rank = as.double(work),
     book = as.factor(book)
@@ -28,12 +26,12 @@ d = d |>
 
 d1 = d |> 
   filter(
-    type == 'facsimile' | translation == 'RUF'
+    analysis_original
   )
 
 d2 = d |> 
   filter(
-    type == 'normalised' | translation == 'RUF'
+    analysis_normalised
   )
 
 # -- fit -- #

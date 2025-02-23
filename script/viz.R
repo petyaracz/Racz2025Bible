@@ -34,10 +34,10 @@ ridgePlot = function(dat,col1,col2){
 drawCor = function(d_cor,col1,col2){
   d_cor |> 
     ggplot(aes({{col2}},{{col1}}, colour = work)) +
-    geom_point(alpha = .5) +
-    geom_smooth(alpha = .5) +
-    scale_colour_viridis_d(option = 'H') +
-    scale_fill_viridis_d(option = 'H') +
+    geom_point(alpha = .1) +
+    geom_smooth() +
+    scale_colour_viridis_d(option = 'viridis') +
+    scale_fill_viridis_d(option = 'viridis') +
     theme_bw() +
     xlab('normalised') +
     ylab('original')
@@ -56,40 +56,32 @@ drawPred = function(pred,col1){
 
 # -- read -- #
 
-info2 = read_tsv('dat/gospel_bigram_informativity.gz')
-info3 = read_tsv('dat/gospel_trigram_informativity.gz')
 d = read_tsv('dat/gospel_entropy.tsv')
 
 # -- setup -- #
 
 d = d |> 
   mutate(
-    work = description |> 
-      str_extract('^.*(?=, Forrás)') |> 
-      str_replace('Keletkezési idő: ', '') |> 
-      fct_reorder(-year)
+    work = fct_reorder(work, -year)
   )
-
-d |> 
-  distinct(work)
 
 d1 = d |> 
   filter(
-    type == 'facsimile' | translation == 'RUF'
+    analysis_original
   )
 
 d2 = d |> 
   filter(
-    type == 'normalised' | translation == 'RUF'
+    analysis_normalised
   )
 
 d1b = d1 |> 
-  filter(translation != 'RUF') |> 
+  filter(!translation %in% c('RUF','SzIT')) |> 
   select(work,year,book,verse,perplexity,wc,avg_word_length,type_token_ratio) |> 
   rename_with(~ paste0(., "_orig"), -c(work,year,book,verse))
 
 d2b = d2 |> 
-  filter(translation != 'RUF') |> 
+  filter(!translation %in% c('RUF','SzIT')) |> 
   select(work,year,book,verse,perplexity,wc,avg_word_length,type_token_ratio) |> 
   rename_with(~ paste0(., "_norm"), -c(work,year,book,verse))
 
@@ -123,33 +115,33 @@ pred2 = d2 |>
 
 # -- viz: info -- #
 
-info2 |> 
-  filter(type == 'facsimile') |> 
-  mutate(
-    translation = fct_reorder(translation, -year),
-    book = fct_relevel(book, 'Jn', 'Lk', 'Mk', 'Mt')
-    ) |> 
-  ggplot(aes(information,translation)) +
-  geom_density_ridges() +
-  facet_wrap( ~ book, ncol = 4) +
-  theme_minimal() +
-  xlab('Gospel') +
-  ylab('Bigram information density (original)')
-ggsave('viz/gospel_bigram_info.pdf', width = 6, height = 6)
-
-info3 |> 
-  filter(type == 'facsimile') |> 
-  mutate(
-    translation = fct_reorder(translation, -year),
-    book = fct_relevel(book, 'Jn', 'Lk', 'Mk', 'Mt')
-  ) |> 
-  ggplot(aes(information,translation)) +
-  geom_density_ridges() +
-  facet_wrap( ~ book, ncol = 4) +
-  theme_minimal() +
-  xlab('Gospel') +
-  ylab('Trigram information density (original)')
-ggsave('viz/gospel_trigram_info.pdf', width = 6, height = 6)
+# info2 |> 
+#   filter(type == 'facsimile') |> 
+#   mutate(
+#     translation = fct_reorder(translation, -year),
+#     book = fct_relevel(book, 'Jn', 'Lk', 'Mk', 'Mt')
+#     ) |> 
+#   ggplot(aes(information,translation)) +
+#   geom_density_ridges() +
+#   facet_wrap( ~ book, ncol = 4) +
+#   theme_minimal() +
+#   xlab('Gospel') +
+#   ylab('Bigram information density (original)')
+# ggsave('viz/gospel_bigram_info.pdf', width = 6, height = 6)
+# 
+# info3 |> 
+#   filter(type == 'facsimile') |> 
+#   mutate(
+#     translation = fct_reorder(translation, -year),
+#     book = fct_relevel(book, 'Jn', 'Lk', 'Mk', 'Mt')
+#   ) |> 
+#   ggplot(aes(information,translation)) +
+#   geom_density_ridges() +
+#   facet_wrap( ~ book, ncol = 4) +
+#   theme_minimal() +
+#   xlab('Gospel') +
+#   ylab('Trigram information density (original)')
+# ggsave('viz/gospel_trigram_info.pdf', width = 6, height = 6)
 
 # -- viz: stats -- #
 
@@ -269,10 +261,10 @@ pred_plot = wrap_plots(p13,p15,p17,p14,p16,p18, ncol = 1) + plot_layout(guides =
 # -- draw -- #
 
 info_plot
-ggsave('viz/gospel_stats.png', dpi = 900, width = 9, height = 6)
+ggsave('viz/gospel_stats.png', dpi = 900, width = 9, height = 7)
 
 cor_plot
-ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 5.28)
+ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 6.22)
 
 pred_plot
 ggsave('viz/gospel_preds.png', dpi = 900, width = 15, height = 12)
