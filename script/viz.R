@@ -3,6 +3,7 @@
 library(tidyverse)
 library(ggthemes)
 library(ggridges)
+library(nnet)
 library(patchwork)
 library(sjPlot)
 
@@ -42,13 +43,23 @@ drawCor = function(d_cor,col1,col2){
     ylab('original')
 }
 
+# take pred object and predictor name (see setup below) return plot
+drawPred = function(pred,col1){
+  pred |> 
+    ggplot(aes({{col1}},value,colour = name)) +
+    geom_point(alpha = .25) +
+    geom_smooth() +
+    scale_colour_viridis_d(option = 'H') +
+    scale_fill_viridis_d(option = 'H') +
+    theme_bw() +
+    theme(axis.title.y = element_blank())
+}
+
 # -- read -- #
 
 info2 = read_tsv('dat/gospel_bigram_informativity.gz')
 info3 = read_tsv('dat/gospel_trigram_informativity.gz')
 d = read_tsv('dat/gospel_entropy.tsv')
-load('models/fit6.rda')
-load('models/fit6b.rda')
 
 # -- setup -- #
 
@@ -86,10 +97,30 @@ d2b = d2 |>
 d_cor = left_join(d1b,d2b) |> 
   mutate(work = fct_rev(work)) # I need these in this order here
 
-# -- models -- #
-
 fit0 = multinom(work ~ perplexity + wc + type_token_ratio, data = d1)
 fit4 = multinom(work ~ perplexity + wc + type_token_ratio, data = d2)
+
+my_levels = as.character(unique(d$work))
+
+pred1 = fit0 |> 
+  predict(d1, type = 'probs') |> 
+  as_tibble()
+
+pred1 = d1 |> 
+  select(work,perplexity,wc,type_token_ratio) |> 
+  bind_cols(pred1) |> 
+  pivot_longer(-c(work,perplexity,wc,type_token_ratio)) |> 
+  mutate(name = fct_relevel(name, my_levels))
+
+pred2 = fit4 |> 
+  predict(d2, type = 'probs') |> 
+  as_tibble()
+
+pred2 = d2 |> 
+  select(work,perplexity,wc,type_token_ratio) |> 
+  bind_cols(pred2) |> 
+  pivot_longer(-c(work,perplexity,wc,type_token_ratio)) |> 
+  mutate(name = fct_relevel(name, my_levels))
 
 # -- viz: info -- #
 
@@ -220,44 +251,21 @@ cor_plot = (p9 + p10) / (p11 + p12) + plot_layout(guides = "collect") & theme(le
 
 # -- viz: preds -- #
 
+p13 = drawPred(pred1, perplexity) +
+  ggtitle('predicted work: original texts')
 
-my_levels = as.character(unique(d$work))
+p14 = drawPred(pred2, perplexity) +
+  ggtitle('predicted work: normalised texts')
 
-pred1 = fit0 |> 
-  predict(d1, type = 'probs') |> 
-  as_tibble()
+p15 = drawPred(pred1, wc)
 
-p13 = d1 |> 
-  select(perplexity,wc,type_token_ratio) |> 
-  bind_cols(pred1) |> 
-  pivot_longer(-c(perplexity,wc,type_token_ratio)) |> 
-  mutate(name = fct_relevel(name, my_levels)) |> 
-  ggplot(aes(perplexity,value,colour = name)) +
-  geom_point(alpha = .25) +
-  geom_smooth() +
-  scale_colour_viridis_d(option = 'H') +
-  scale_fill_viridis_d(option = 'H') +
-  theme_bw() +
-  ggtitle('predicted work:\noriginal texts')
+p16 = drawPred(pred2, wc)
 
-pred2 = fit4 |> 
-  predict(d2, type = 'probs') |> 
-  as_tibble()
+p17 = drawPred(pred1, type_token_ratio)
 
-p14 = d2 |> 
-  select(perplexity,wc,type_token_ratio) |> 
-  bind_cols(pred2) |> 
-  pivot_longer(-c(perplexity,wc,type_token_ratio)) |> 
-  mutate(name = fct_relevel(name, my_levels)) |> 
-  ggplot(aes(perplexity,value,colour = name)) +
-  geom_point(alpha = .25) +
-  geom_smooth() +
-  scale_colour_viridis_d(option = 'H') +
-  scale_fill_viridis_d(option = 'H') +
-  theme_bw() +
-  ggtitle('predicted work:\nnormalised texts')
+p18 = drawPred(pred2, type_token_ratio)
 
-pred_plot = p13 + p14 + plot_layout(guides = 'collect') & theme(legend.position = 'left')
+pred_plot = wrap_plots(p13,p15,p17,p14,p16,p18, nrow = 2) + plot_layout(guides = 'collect') & theme(legend.position = 'left')
 
 # -- draw -- #
 
@@ -268,4 +276,4 @@ cor_plot
 ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 5.28)
 
 pred_plot
-ggsave('viz/gospel_preds.png', dpi = 900, width = 8, height = 5.28)
+ggsave('viz/gospel_preds.png', dpi = 900, width = 9, height = 6)
