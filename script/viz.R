@@ -1,17 +1,53 @@
 # -- head -- #
 
 library(tidyverse)
-library(gghalves)
 library(ggthemes)
+library(ggridges)
 library(patchwork)
 
 setwd('~/Github/Racz2025Bible/')
+
+# -- fun -- #
+
+# take dat colnames return ridge plot w/ quantiles
+ridgePlot = function(dat,col1,col2){
+  dat |> 
+    ggplot(aes({{col2}},{{col1}}, fill = factor(after_stat(quantile)))) +
+    stat_density_ridges(
+      geom = "density_ridges_gradient", 
+      calc_ecdf = TRUE,
+      quantiles = 4, 
+      quantile_lines = TRUE,
+      rel_min_height = 0.01,
+      scale = 1.33
+    ) +
+    scale_fill_viridis_d(name = "Quartiles", option = 'C') +
+    theme_few() +
+    guides(fill = 'none') +
+    theme(axis.title.y = element_blank()) +
+    scale_y_discrete(expand = expansion(mult = c(.1, .25)))  
+}
+
+# draw cor bw col1 col2
+drawCor = function(d_cor,col1,col2){
+  d_cor |> 
+    ggplot(aes({{col2}},{{col1}}, colour = work)) +
+    geom_point(alpha = .5) +
+    geom_smooth(alpha = .5) +
+    scale_colour_viridis_d(option = 'H') +
+    scale_fill_viridis_d(option = 'H') +
+    theme_bw() +
+    xlab('normalised') +
+    ylab('original')
+}
 
 # -- read -- #
 
 info2 = read_tsv('dat/gospel_bigram_informativity.gz')
 info3 = read_tsv('dat/gospel_trigram_informativity.gz')
 d = read_tsv('dat/gospel_entropy.tsv')
+load('models/fit6.rda')
+load('models/fit6b.rda')
 
 # -- setup -- #
 
@@ -22,6 +58,9 @@ d = d |>
       str_replace('Keletkezési idő: ', '') |> 
       fct_reorder(-year)
   )
+
+d |> 
+  distinct(work)
 
 d1 = d |> 
   filter(
@@ -44,11 +83,9 @@ d2b = d2 |>
   rename_with(~ paste0(., "_norm"), -c(work,year,book,verse))
 
 d_cor = left_join(d1b,d2b) |> 
-  mutate(work = fct_reorder(work, year)) # since I'm not flipping the cor plots
+  mutate(work = fct_rev(work)) # I need these in this order here
 
-# -- viz -- #
-
-## info
+# -- viz: info -- #
 
 info2 |> 
   filter(type == 'facsimile') |> 
@@ -56,10 +93,8 @@ info2 |>
     translation = fct_reorder(translation, -year),
     book = fct_relevel(book, 'Jn', 'Lk', 'Mk', 'Mt')
     ) |> 
-  ggplot(aes(translation,information)) +
-  geom_half_violin(side = 'r', position = position_nudge(x = 0.1)) +
-  geom_tufteboxplot() +
-  coord_flip() +
+  ggplot(aes(information,translation)) +
+  geom_density_ridges() +
   facet_wrap( ~ book, ncol = 4) +
   theme_minimal() +
   xlab('Gospel') +
@@ -72,110 +107,134 @@ info3 |>
     translation = fct_reorder(translation, -year),
     book = fct_relevel(book, 'Jn', 'Lk', 'Mk', 'Mt')
   ) |> 
-  ggplot(aes(translation,information)) +
-  geom_half_violin(side = 'r', position = position_nudge(x = 0.1)) +
-  geom_tufteboxplot() +
-  coord_flip() +
+  ggplot(aes(information,translation)) +
+  geom_density_ridges() +
   facet_wrap( ~ book, ncol = 4) +
   theme_minimal() +
   xlab('Gospel') +
   ylab('Trigram information density (original)')
 ggsave('viz/gospel_trigram_info.pdf', width = 6, height = 6)
 
-## other
+# -- viz: stats -- #
 
-names(d1)
-buildPlots = function(d1){
-p1 = d1 |> 
-  ggplot(aes(work,perplexity)) +
-  geom_half_violin(side = 'r', position = position_nudge(x = 0.1)) +
-  geom_tufteboxplot(median.type = "line", hoffset = 0, width = 3) +
-  theme_bw() +
-  ylab('verse perplexity') +
-  theme(
-    axis.title.y = element_blank(),
-    # axis.text.y = element_blank(),
-    # axis.ticks.y = element_blank()
-        ) +
-  coord_flip()
+range(d1$perplexity)
+range(d2$perplexity)
+range(d1$wc)
+range(d2$wc)
+range(d1$avg_word_length)
+range(d2$avg_word_length)
+range(d1$type_token_ratio)
+range(d2$type_token_ratio)
 
-p2 = d1 |> 
-  ggplot(aes(work,wc)) +
-  geom_half_violin(side = 'r', position = position_nudge(x = 0.1)) +
-  geom_tufteboxplot(median.type = "line", hoffset = 0, width = 3) +
-  theme_bw() +
-  ylab('verse word count') +
+p1 = ridgePlot(d1,work,perplexity) +
+  ggtitle('original text') +
+  xlim(90,410) +
   theme(
-    axis.title.y = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title = element_blank()
+  )
+
+p2 = ridgePlot(d1,work,wc) +
+  # ggtitle('original text') +
+  xlab('verse word count') +
+  xlim(250,1650) +
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank()
+  )
+
+p3 = ridgePlot(d1,work,avg_word_length) +
+  # ggtitle('original text') +
+  xlab('verse avg. word length') +
+  xlim(4,6.1) +
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank()
+  )
+
+p4 = ridgePlot(d1,work,type_token_ratio) +
+  # ggtitle('original text') +
+  xlab('verse type/token') +
+  xlim(.35,.9) +
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank()
+  )
+
+p5 = ridgePlot(d2,work,perplexity) +
+  ggtitle('normalised text') +
+  xlab('verse perplexity') +
+  xlim(90,410)
+
+p6 = ridgePlot(d2,work,wc) +
+  # ggtitle('normalised text') +
+  xlim(250,1650) +
+  xlab('verse word count') +
+  theme(
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank()
-  ) +
-  ylab('verse word count') +
-  coord_flip()
+  )
 
-p3 = d1 |> 
-  ggplot(aes(work,avg_word_length)) +
-  geom_half_violin(side = 'r', position = position_nudge(x = 0.1)) +
-  geom_tufteboxplot(median.type = "line", hoffset = 0, width = 3) +
-  theme_bw() +
-  ylab('verse average word length') +
+p7 = ridgePlot(d1,work,avg_word_length) +
+  # ggtitle('original text') +
+  xlab('verse avg. word length') +
+  xlim(4,6.1) +
   theme(
-    axis.title.y = element_blank(),
-    # axis.text.y = element_blank(),
-    # axis.ticks.y = element_blank()
-  ) +
-  ylab('verse average word length') +
-  coord_flip()
-
-p4 = d1 |> 
-  ggplot(aes(work,type_token_ratio)) +
-  geom_half_violin(side = 'r', position = position_nudge(x = 0.1)) +
-  geom_tufteboxplot(median.type = "line", hoffset = 0, width = 3) +
-  theme_bw() +
-  ylab('verse type token ratio') +
-  theme(
-    axis.title.y = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank()
-  ) +
-  ylab('verse type token ratio') +
-  coord_flip()
+  )
 
-list(p1,p2,p3,p4)
-}
+p8 = ridgePlot(d2,work,type_token_ratio) +
+  xlab('verse type/token') +
+  xlim(.35,.9) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
 
-plots1 = buildPlots(d1)
-plots2 = buildPlots(d2)
+info_plot = wrap_plots(p1,p2,p3,p4,p5,p6,p7,p8, nrow = 2)
 
+# -- viz: corr -- #
 ## cors
 
-drawCor = function(d_cor,col1,col2){
-  d_cor |> 
-    ggplot(aes({{col2}},{{col1}}, colour = work)) +
-    geom_point(alpha = .5) +
-    geom_smooth(alpha = .5) +
-    scale_colour_viridis_d(option = 'D') +
-    scale_fill_viridis_d(option = 'D') +
-    theme_bw() +
-    xlab('normalised') +
-    ylab('original')
-}
-
-p5 = drawCor(d_cor,perplexity_orig,perplexity_norm)  +
+p9 = drawCor(d_cor,perplexity_orig,perplexity_norm)  +
   ggtitle('verse perplexity')
-p6 = drawCor(d_cor,wc_orig,wc_norm) +
+p10 = drawCor(d_cor,wc_orig,wc_norm) +
   ggtitle('verse word count')
-p7 = drawCor(d_cor,avg_word_length_orig,avg_word_length_norm)  +
+p11 = drawCor(d_cor,avg_word_length_orig,avg_word_length_norm)  +
   ggtitle('verse average word length')
-p8 = drawCor(d_cor,type_token_ratio_orig,type_token_ratio_norm)  +
+p12 = drawCor(d_cor,type_token_ratio_orig,type_token_ratio_norm)  +
   ggtitle('verse type token ratio')
+
+cor_plot = (p9 + p10) / (p11 + p12) + plot_layout(guides = "collect") & theme(legend.position = 'left')
+
+# -- viz: preds -- #
+
+p13 = plot_model(fit6, 'pred', terms = c('wc','work')) +
+  theme_bw() +
+  scale_fill_viridis_d(option = 'H') +
+  scale_colour_viridis_d(option = 'H') +
+  ggtitle('predicted verse\nperplexity, original')
+
+p14 = plot_model(fit6b, 'pred', terms = c('wc','work')) +
+  theme_bw() +
+  scale_fill_viridis_d(option = 'H') +
+  scale_colour_viridis_d(option = 'H') +
+  ggtitle('predicted verse\nperplexity, normalised')
+
+pred_plot = p13 + p14 + plot_layout(guides = 'collect') & theme(legend.position = 'left')
 
 # -- draw -- #
 
-wrap_plots(plots1, ncol = 2) + plot_annotation(tag_levels = 'i', title = 'original text')
-ggsave('viz/gospel_stats_original.png', dpi = 900, width = 8, height = 6)
-wrap_plots(plots2, ncol = 2) + plot_annotation(tag_levels = 'i', title = 'normalised text')
-ggsave('viz/gospel_stats_normalised.png', dpi = 900, width = 8, height = 6)
+info_plot
+ggsave('viz/gospel_stats.png', dpi = 900, width = 9, height = 6)
 
-(p5 + p6) / (p7 + p8) + plot_layout(guides = "collect") & theme(legend.position = "left")
-ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 6)
+cor_plot
+ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 5.28)
+
+pred_plot
+ggsave('viz/gospel_preds.png', dpi = 900, width = 8, height = 2.64)
