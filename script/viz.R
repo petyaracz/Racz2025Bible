@@ -4,6 +4,7 @@ library(tidyverse)
 library(ggthemes)
 library(ggridges)
 library(patchwork)
+library(sjPlot)
 
 setwd('~/Github/Racz2025Bible/')
 
@@ -224,9 +225,36 @@ p14 = plot_model(fit6b, 'pred', terms = c('wc','work')) +
   theme_bw() +
   scale_fill_viridis_d(option = 'H') +
   scale_colour_viridis_d(option = 'H') +
+  # guides(colour = 'none', fill = 'none') +
   ggtitle('predicted verse\nperplexity, normalised')
 
-pred_plot = p13 + p14 + plot_layout(guides = 'collect') & theme(legend.position = 'left')
+x_labels = unique(d$work)
+
+p15 = plot_model(fit6, 'pred', terms = c('work')) +
+  theme_bw() +
+  ggtitle('predicted verse\nperplexity, original') +
+  coord_flip() +
+  ylim(160,300) +
+  scale_x_reverse(breaks = 1:7, labels = x_labels) +
+  theme(
+    axis.title.y = element_blank()
+  )
+
+p16 = plot_model(fit6b, 'pred', terms = c('work')) +
+  theme_bw() +
+  ggtitle('predicted verse\nperplexity, normalised') +
+  coord_flip() +
+  ylim(160,300) +
+  scale_x_reverse(breaks = 1:7, labels = x_labels) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank()
+        )
+
+pred_plot_1 = p13 + p14 + plot_layout(guides = 'collect') & theme(legend.position = 'left')
+
+pred_plot_2 = p15 + p16
 
 # -- draw -- #
 
@@ -236,5 +264,8 @@ ggsave('viz/gospel_stats.png', dpi = 900, width = 9, height = 6)
 cor_plot
 ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 5.28)
 
-pred_plot
-ggsave('viz/gospel_preds.png', dpi = 900, width = 8, height = 2.64)
+pred_plot_1
+ggsave('viz/gospel_preds_1.png', dpi = 900, width = 8, height = 2.64)
+
+pred_plot_2
+ggsave('viz/gospel_preds_2.png', dpi = 900, width = 8, height = 2.64)

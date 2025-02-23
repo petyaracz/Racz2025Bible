@@ -83,7 +83,9 @@ Measures correlate for original and normalised, but this varies across translati
 
 We fit a LM predicting perplexity ~ translation * wc + book. (best model according to LOO)
 
-![Fitted](viz/gospel_preds.png)
+![Fitted, translation * wc](viz/gospel_preds_1.png)
+
+![Fitted, translation only](viz/gospel_preds_2.png)
 
 ## Bibliography
 
