@@ -91,7 +91,7 @@ Measures correlate for original and normalised, but this varies across translati
 
 ![Correlations](viz/gospel_stats_correlations.png)
 
-We fit a multinomial LM predicting work from perplexity, verse avg word count, verse type token ratio. Model accuracy is 33% on original texts and 25% on normalised texts. Contrast with chance level of around 10%.
+We fit a multinomial LM predicting work from perplexity, verse avg word count, verse type token ratio. Model accuracy is 30% on original texts and 23% on normalised texts. Contrast with chance level of around 10%.
 
 ![Fitted](viz/gospel_preds.png)
 

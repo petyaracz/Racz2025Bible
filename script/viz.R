@@ -357,7 +357,7 @@ n_yes1 = d1 |>
   filter(yes) |> 
   nrow()
 
-n_yes1 / nrow(d1) # 33% vs guess: ~10%
+n_yes1 / nrow(d1) # 30% vs guess: ~10%
 
 d2$pred = predict(fit4, type = 'class')
 
@@ -366,7 +366,7 @@ n_yes2 = d2 |>
   filter(yes) |> 
   nrow()
 
-n_yes2 / nrow(d2) # 25% vs guess: ~10%
+n_yes2 / nrow(d2) # 23% vs guess: ~10%
 
 # -- draw -- #
 
