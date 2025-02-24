@@ -80,11 +80,15 @@ Entropy is shaped by the size of the underlying vocabulary and text size. So we 
 
 ![Descriptive statistics](viz/gospel_stats.png)
 
+We can track changes in the perplexity of each verse across translations in this plot of highly questionable utility.
+
+![Descriptive statistics across verse](viz/gospel_lines.png)
+
 Measures correlate for original and normalised, but this varies across translations.
 
 ![Correlations](viz/gospel_stats_correlations.png)
 
-We fit a multinomial LM predicting work from perplexity, verse avg word count, verse type token ratio.
+We fit a multinomial LM predicting work from perplexity, verse avg word count, verse type token ratio. Model accuracy is 33% on original texts and 25% on normalised texts. Contrast with chance level of around 10%.
 
 ![Fitted](viz/gospel_preds.png)
 

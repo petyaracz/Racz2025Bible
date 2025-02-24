@@ -1,6 +1,7 @@
 # -- head -- #
 
 library(tidyverse)
+library(glue)
 library(ggthemes)
 library(ggridges)
 library(nnet)
@@ -24,9 +25,13 @@ ridgePlot = function(dat,col1,col2){
       scale = 1.33
     ) +
     scale_fill_viridis_d(name = "Quartiles", option = 'C') +
-    theme_few() +
+    theme_minimal() +
     guides(fill = 'none') +
-    theme(axis.title.y = element_blank()) +
+    theme(
+      axis.title.y = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank()
+      ) +
     scale_y_discrete(expand = expansion(mult = c(.1, .25)))  
 }
 
@@ -54,20 +59,6 @@ drawPred = function(pred,col1){
     theme(axis.title.y = element_blank())
 }
 
-my_labels = c(
-"Müncheni kódex, 1466",                            
-"Pesti Gábor:\nÚjtestamentum, 1536",                
-"Sylvester János:\nÚjtestamentum, 1541",            
-"Heltai Gáspár:\nÚjtestamentum, 1565",              
-"Károli Gáspár\nVizsolyi Bibliája, 1590",           
-"Káldi György\nfordítása, 1626",                    
-"Károli Gáspár\nrevideált fordítása, 1908",         
-"Káldi Neovulgáta, 1997",                          
-"Szent István\nTársulati Biblia, 2003",             
-"Magyar Bibliatársulat\nújfordítású Bibliája, 2014"
-)
-names(my_labels) = my_levels
-
 # take pred object and predictor name (see setup below) return plot
 drawPredGroup = function(pred,col1){
   pred |> 
@@ -76,12 +67,10 @@ drawPredGroup = function(pred,col1){
     geom_smooth() +
     scale_colour_viridis_d(option = 'viridis') +
     scale_fill_viridis_d(option = 'viridis') +
-    theme_few() +
+    theme_minimal() +
     labs(colour = '', fill = '') +
     theme(axis.title.y = element_blank())
 }
-
-# -- read -- #
 
 d = read_tsv('dat/gospel_entropy.tsv')
 
@@ -103,12 +92,12 @@ d2 = d |>
   )
 
 d1b = d1 |> 
-  filter(!translation %in% c('RUF','SzIT')) |> 
+  filter(!translation %in% c('RUF','SzIT','KaldiNeo', 'KaroliRevid')) |> 
   select(work,year,book,verse,perplexity,wc,avg_word_length,type_token_ratio) |> 
   rename_with(~ paste0(., "_orig"), -c(work,year,book,verse))
 
 d2b = d2 |> 
-  filter(!translation %in% c('RUF','SzIT','KaldiNeo')) |> 
+  filter(!translation %in% c('RUF','SzIT','KaldiNeo', 'KaroliRevid')) |> 
   select(work,year,book,verse,perplexity,wc,avg_word_length,type_token_ratio) |> 
   rename_with(~ paste0(., "_norm"), -c(work,year,book,verse))
 
@@ -119,6 +108,20 @@ fit0 = multinom(work ~ perplexity + wc + type_token_ratio, data = d1)
 fit4 = multinom(work ~ perplexity + wc + type_token_ratio, data = d2)
 
 my_levels = as.character(unique(d$work))
+
+my_labels = c(
+  "Müncheni kódex, 1466",                            
+  "Pesti Gábor:\nÚjtestamentum, 1536",                
+  "Sylvester János:\nÚjtestamentum, 1541",            
+  "Heltai Gáspár:\nÚjtestamentum, 1565",              
+  "Károli Gáspár\nVizsolyi Bibliája, 1590",           
+  "Káldi György\nfordítása, 1626",                    
+  "Károli Gáspár\nrevideált fordítása, 1908",         
+  "Káldi Neovulgáta, 1997",                          
+  "Szent István\nTársulati Biblia, 2003",             
+  "Magyar Bibliatársulat\nújfordítású Bibliája, 2014"
+)
+names(my_labels) = my_levels
 
 pred1 = fit0 |> 
   predict(d1, type = 'probs') |> 
@@ -297,6 +300,71 @@ p18 = drawPredGroup(pred2, type_token_ratio) +
 
 pred_plot = wrap_plots(p13,p14,p15,p16,p17,p18, ncol = 2) + plot_layout(guides = 'collect') & theme(legend.position = 'left')
 
+# -- brainrot -- #
+
+p19 = d1 |> 
+  mutate(
+    work = fct_rev(work),
+    book = fct_rev(book)
+         ) |> 
+  ggplot(aes(work,perplexity, group = verse, colour = verse)) +
+  facet_wrap( ~ book) +
+  scale_colour_viridis_c(option = 'turbo') +
+  geom_line() +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
+    axis.title.x = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+    ) +
+  ggtitle('Original text') +
+  ylim(90,410)
+
+p20 = d2 |> 
+  mutate(
+    work = fct_rev(work),
+    book = fct_rev(book)
+  ) |> 
+  ggplot(aes(work,perplexity, group = verse, colour = verse)) +
+  facet_wrap( ~ book) +
+  scale_colour_viridis_c(option = 'turbo') +
+  geom_line() +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+    ) +
+  ggtitle('Normalised text') + 
+  ylim(90,410)
+
+lines_plot = p19 + p20 + plot_layout(guides = 'collect') & theme(legend.position = 'left')
+
+# -- accuracy -- #
+
+d1$pred = predict(fit0)
+
+n_yes1 = d1 |> 
+  mutate(yes = work == pred) |> 
+  filter(yes) |> 
+  nrow()
+
+n_yes1 / nrow(d1) # 33% vs guess: ~10%
+
+d2$pred = predict(fit4, type = 'class')
+
+n_yes2 = d2 |> 
+  mutate(yes = work == pred) |> 
+  filter(yes) |> 
+  nrow()
+
+n_yes2 / nrow(d2) # 25% vs guess: ~10%
+
 # -- draw -- #
 
 info_plot
@@ -307,3 +375,6 @@ ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 6.22)
 
 pred_plot
 ggsave('viz/gospel_preds.png', dpi = 900, width = 8, height = 6.22)
+
+lines_plot
+ggsave('viz/gospel_lines.png', dpi = 900, width = 8, height = 6.22)
