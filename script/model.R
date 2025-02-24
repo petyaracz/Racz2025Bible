@@ -36,7 +36,7 @@ d2 = d |>
 
 # -- fit -- #
 
-# perplexity, original
+# original
 fit0 = multinom(work ~ perplexity + wc + type_token_ratio, data = d1)
 fit1 = multinom(work ~ wc + type_token_ratio, data = d1)
 fit2 = multinom(work ~ perplexity + type_token_ratio, data = d1)
@@ -44,7 +44,7 @@ fit3 = multinom(work ~ perplexity + wc, data = d1)
 
 plot(compare_performance(fit0,fit1,fit2,fit3), metrics = 'common')
 
-# perplexity, normalised
+# normalised
 fit4 = multinom(work ~ perplexity + wc + type_token_ratio, data = d2)
 fit5 = multinom(work ~ wc + type_token_ratio, data = d2)
 fit6 = multinom(work ~ perplexity + type_token_ratio, data = d2)

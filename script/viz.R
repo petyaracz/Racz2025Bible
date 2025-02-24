@@ -12,6 +12,8 @@ setwd('~/Github/Racz2025Bible/')
 
 # -- fun -- #
 
+paired_palette = RColorBrewer::brewer.pal(11, "Paired")
+
 # take dat colnames return ridge plot w/ quantiles
 ridgePlot = function(dat,col1,col2){
   dat |> 
@@ -41,8 +43,8 @@ drawCor = function(d_cor,col1,col2){
     ggplot(aes({{col2}},{{col1}}, colour = work)) +
     geom_point(alpha = .1) +
     geom_smooth() +
-    scale_colour_viridis_d(option = 'viridis') +
-    scale_fill_viridis_d(option = 'viridis') +
+    scale_color_manual(values = paired_palette[1:7]) +
+    scale_fill_manual(values = paired_palette[1:7]) +
     theme_bw() +
     xlab('normalised') +
     ylab('original')
@@ -53,7 +55,7 @@ drawPred = function(pred,col1){
   pred |> 
     ggplot(aes({{col1}},predicted_value)) +
     # geom_point(alpha = .25) +
-    geom_smooth() +
+    geom_smooth(se = F) +
     facet_wrap( ~ outcome_variable, nrow = 1, labeller = as_labeller(my_labels)) +
     theme_few() +
     theme(axis.title.y = element_blank())
@@ -64,9 +66,9 @@ drawPredGroup = function(pred,col1){
   pred |> 
     ggplot(aes({{col1}},predicted_value,colour = outcome_variable)) +
     # geom_point(alpha = .25) +
-    geom_smooth() +
-    scale_colour_viridis_d(option = 'viridis') +
-    scale_fill_viridis_d(option = 'viridis') +
+    geom_smooth(se = F) +
+    scale_color_manual(values = paired_palette[1:11]) +
+    scale_fill_manual(values = paired_palette[1:11]) +
     theme_minimal() +
     labs(colour = '', fill = '') +
     theme(axis.title.y = element_blank())
@@ -110,7 +112,8 @@ fit4 = multinom(work ~ perplexity + wc + type_token_ratio, data = d2)
 my_levels = as.character(unique(d$work))
 
 my_labels = c(
-  "Müncheni kódex, 1466",                            
+  "Müncheni kódex, 1466",    
+  "Jordánszky-kódex, 1516–19",
   "Pesti Gábor:\nÚjtestamentum, 1536",                
   "Sylvester János:\nÚjtestamentum, 1541",            
   "Heltai Gáspár:\nÚjtestamentum, 1565",              

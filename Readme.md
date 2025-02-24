@@ -6,16 +6,19 @@ Tetszék énnékem is, ki eleitől fogva mindeneknek szorgalmasan végére járt
 
 ## translations used
 
-1. Müncheni kódex, 1466                            
-2. Pesti Gábor: Újtestamentum, 1536                
-3. Sylvester János: Újtestamentum, 1541            
-4. Heltai Gáspár: Újtestamentum, 1565              
-5. Károli Gáspár Vizsolyi Bibliája, 1590           
-6. Káldi György fordítása, 1626                    
-7. Károli Gáspár revideált fordítása, 1908
-8. Káldi Neovulgáta, 1997 
-9. Szent István Társulati Biblia, 2003
-10. Magyar Bibliatársulat újfordítású Bibliája, 2014
+1. Müncheni kódex, 1466    
+2. Jordánszky kódex, 1516                        
+3. Pesti Gábor: Újtestamentum, 1536                
+4. Sylvester János: Újtestamentum, 1541            
+5. Heltai Gáspár: Újtestamentum, 1565              
+6. Károli Gáspár Vizsolyi Bibliája, 1590           
+7. Káldi György fordítása, 1626                    
+8. Károli Gáspár revideált fordítása, 1908
+9. Káldi Neovulgáta, 1997 
+10. Szent István Társulati Biblia, 2003
+11. Magyar Bibliatársulat újfordítású Bibliája, 2014
+
+Misztótfalusi Kis Miklós not included, because only the normalised version is available (see below).
 
 ## structure
 

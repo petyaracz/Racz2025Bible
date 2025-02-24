@@ -34,7 +34,7 @@ file_name = list.files(my_url)
 
 # which translations have the Gospels
 gospels = matcher |> 
-  filter(file_name %in% c("MunchK", "Jordk", "Pesti", "Sylvester", "Heltai", "Karoli", "Kaldi", "RUF", "SzIT", "KaroliRevid", "KaldiNeo")) |>
+  filter(file_name %in% c("MunchK", "JordK", "Pesti", "Sylvester", "Heltai", "Karoli", "Kaldi", "RUF", "SzIT", "KaroliRevid", "KaldiNeo")) |>
   # add file name
   mutate(
     facsimile = glue('{file_name}_b.tsv'),
