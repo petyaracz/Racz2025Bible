@@ -50,30 +50,6 @@ drawCor = function(d_cor,col1,col2){
     ylab('original')
 }
 
-# take pred object and predictor name (see setup below) return plot
-drawPred = function(pred,col1){
-  pred |> 
-    ggplot(aes({{col1}},predicted_value)) +
-    # geom_point(alpha = .25) +
-    geom_smooth(se = F) +
-    facet_wrap( ~ outcome_variable, nrow = 1, labeller = as_labeller(my_labels)) +
-    theme_few() +
-    theme(axis.title.y = element_blank())
-}
-
-# take pred object and predictor name (see setup below) return plot
-drawPredGroup = function(pred,col1){
-  pred |> 
-    ggplot(aes({{col1}},predicted_value,colour = outcome_variable)) +
-    # geom_point(alpha = .25) +
-    geom_smooth(se = F) +
-    scale_color_manual(values = paired_palette[1:11]) +
-    scale_fill_manual(values = paired_palette[1:11]) +
-    theme_minimal() +
-    labs(colour = '', fill = '') +
-    theme(axis.title.y = element_blank())
-}
-
 d = read_tsv('dat/gospel_entropy.tsv')
 
 # -- setup -- #
@@ -95,56 +71,19 @@ d2 = d |>
 
 d1b = d1 |> 
   filter(!translation %in% c('RUF','SzIT','KaldiNeo', 'KaroliRevid')) |> 
-  select(work,year,book,verse,perplexity,wc,avg_word_length,type_token_ratio) |> 
+  select(work,year,book,verse,perplexity,complexity,wc,avg_word_length,type_token_ratio) |> 
   rename_with(~ paste0(., "_orig"), -c(work,year,book,verse))
 
 d2b = d2 |> 
   filter(!translation %in% c('RUF','SzIT','KaldiNeo', 'KaroliRevid')) |> 
-  select(work,year,book,verse,perplexity,wc,avg_word_length,type_token_ratio) |> 
+  select(work,year,book,verse,perplexity,complexity,wc,avg_word_length,type_token_ratio) |> 
   rename_with(~ paste0(., "_norm"), -c(work,year,book,verse))
 
 d_cor = left_join(d1b,d2b) |> 
   mutate(work = fct_rev(work)) # I need these in this order here
 
-fit0 = multinom(work ~ perplexity + wc + type_token_ratio, data = d1)
-fit4 = multinom(work ~ perplexity + wc + type_token_ratio, data = d2)
-
-my_levels = as.character(unique(d$work))
-
-my_labels = c(
-  "Müncheni kódex, 1466",    
-  "Jordánszky-kódex, 1516–19",
-  "Pesti Gábor:\nÚjtestamentum, 1536",                
-  "Sylvester János:\nÚjtestamentum, 1541",            
-  "Heltai Gáspár:\nÚjtestamentum, 1565",              
-  "Károli Gáspár\nVizsolyi Bibliája, 1590",           
-  "Káldi György\nfordítása, 1626",                    
-  "Károli Gáspár\nrevideált fordítása, 1908",         
-  "Káldi Neovulgáta, 1997",                          
-  "Szent István\nTársulati Biblia, 2003",             
-  "Magyar Bibliatársulat\nújfordítású Bibliája, 2014"
-)
-names(my_labels) = my_levels
-
-pred1 = fit0 |> 
-  predict(d1, type = 'probs') |> 
-  as_tibble()
-
-pred1 = d1 |> 
-  select(work,perplexity,wc,type_token_ratio) |> 
-  bind_cols(pred1) |> 
-  pivot_longer(-c(work,perplexity,wc,type_token_ratio), names_to = 'outcome_variable', values_to = 'predicted_value') |> 
-  mutate(outcome_variable = fct_relevel(outcome_variable, my_levels))
-
-pred2 = fit4 |> 
-  predict(d2, type = 'probs') |> 
-  as_tibble()
-
-pred2 = d2 |> 
-  select(work,perplexity,wc,type_token_ratio) |> 
-  bind_cols(pred2) |> 
-  pivot_longer(-c(work,perplexity,wc,type_token_ratio), names_to = 'outcome_variable', values_to = 'predicted_value') |> 
-  mutate(outcome_variable = fct_relevel(outcome_variable, my_levels))
+fit11 = lmer(perplexity ~ work + (1 | book/verse), data = d1)
+fit21 = lmer(perplexity ~ work + (1 | book/verse), data = d2)
 
 # -- viz: info -- #
 
@@ -180,6 +119,8 @@ pred2 = d2 |>
 
 range(d1$perplexity)
 range(d2$perplexity)
+range(d1$complexity)
+range(d2$complexity)
 range(d1$wc)
 range(d2$wc)
 range(d1$avg_word_length)
@@ -196,7 +137,15 @@ p1 = ridgePlot(d1,work,perplexity) +
     axis.title = element_blank()
   )
 
-p2 = ridgePlot(d1,work,wc) +
+p2 = ridgePlot(d1,work,complexity) +
+  ggtitle('original text') +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title = element_blank()
+  )
+
+p3 = ridgePlot(d1,work,wc) +
   # ggtitle('original text') +
   xlab('verse word count') +
   xlim(250,1650) +
@@ -206,7 +155,7 @@ p2 = ridgePlot(d1,work,wc) +
     axis.title = element_blank()
   )
 
-p3 = ridgePlot(d1,work,avg_word_length) +
+p4 = ridgePlot(d1,work,avg_word_length) +
   # ggtitle('original text') +
   xlab('verse avg. word length') +
   xlim(4,6.1) +
@@ -216,7 +165,7 @@ p3 = ridgePlot(d1,work,avg_word_length) +
     axis.title = element_blank()
   )
 
-p4 = ridgePlot(d1,work,type_token_ratio) +
+p5 = ridgePlot(d1,work,type_token_ratio) +
   # ggtitle('original text') +
   xlab('verse type/token') +
   xlim(.35,.9) +
@@ -226,12 +175,20 @@ p4 = ridgePlot(d1,work,type_token_ratio) +
     axis.title = element_blank()
   )
 
-p5 = ridgePlot(d2,work,perplexity) +
+p6 = ridgePlot(d2,work,perplexity) +
   ggtitle('normalised text') +
   xlab('verse perplexity') +
   xlim(90,410)
 
-p6 = ridgePlot(d2,work,wc) +
+p7 = ridgePlot(d2,work,complexity) +
+  ggtitle('original text') +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.title = element_blank()
+  )
+
+p8 = ridgePlot(d2,work,wc) +
   # ggtitle('normalised text') +
   xlim(250,1650) +
   xlab('verse word count') +
@@ -240,7 +197,7 @@ p6 = ridgePlot(d2,work,wc) +
     axis.ticks.y = element_blank()
   )
 
-p7 = ridgePlot(d1,work,avg_word_length) +
+p9 = ridgePlot(d1,work,avg_word_length) +
   # ggtitle('original text') +
   xlab('verse avg. word length') +
   xlim(4,6.1) +
@@ -249,7 +206,7 @@ p7 = ridgePlot(d1,work,avg_word_length) +
     axis.ticks.y = element_blank()
   )
 
-p8 = ridgePlot(d2,work,type_token_ratio) +
+p10 = ridgePlot(d2,work,type_token_ratio) +
   xlab('verse type/token') +
   xlim(.35,.9) +
   theme(
@@ -257,51 +214,44 @@ p8 = ridgePlot(d2,work,type_token_ratio) +
     axis.ticks.y = element_blank()
   )
 
-info_plot = wrap_plots(p1,p2,p3,p4,p5,p6,p7,p8, nrow = 2)
+info_plot = wrap_plots(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10, nrow = 2)
 
 # -- viz: corr -- #
 ## cors
 
-p9 = drawCor(d_cor,perplexity_orig,perplexity_norm)  +
+p11 = drawCor(d_cor,perplexity_orig,perplexity_norm)  +
   ggtitle('verse perplexity')
-p10 = drawCor(d_cor,wc_orig,wc_norm) +
+p12 = drawCor(d_cor,wc_orig,wc_norm) +
   ggtitle('verse word count')
-p11 = drawCor(d_cor,avg_word_length_orig,avg_word_length_norm)  +
+p13 = drawCor(d_cor,avg_word_length_orig,avg_word_length_norm)  +
   ggtitle('verse average word length')
-p12 = drawCor(d_cor,type_token_ratio_orig,type_token_ratio_norm)  +
+p14 = drawCor(d_cor,type_token_ratio_orig,type_token_ratio_norm)  +
   ggtitle('verse type token ratio')
 
-cor_plot = (p9 + p10) / (p11 + p12) + plot_layout(guides = "collect") & theme(legend.position = 'left')
+cor_plot = (p11 + p12) / (p13 + p14) + plot_layout(guides = "collect") & theme(legend.position = 'left')
 
 # -- viz: preds -- #
 
-p13 = drawPredGroup(pred1, perplexity) +
-  ggtitle('predicted work:\noriginal texts') +
-  xlab('verse perplexity') +
-  xlim(90,410)
+# 15,16
+p15 = plot_model(fit11, 'pred', terms = 'work') +
+  coord_flip() +
+  theme_minimal() +
+  theme(axis.title.y = element_blank()) +
+  ylim(90,410) +
+  ggtitle('Predicted perplexity, original texts')
 
-p14 = drawPredGroup(pred2, perplexity) +
-  ggtitle('predicted work:\nnormalised texts') +
-  xlab('verse perplexity') +
-  xlim(90,410)
+p16 = plot_model(fit21, 'pred', terms = 'work') +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+        ) +
+  ylim(90,410) +
+  ggtitle('Predicted perplexity, normalised texts')
 
-p15 = drawPredGroup(pred1, wc) + 
-  xlab('word count') +
-  xlim(250,1650)
-  
-p16 = drawPredGroup(pred2, wc) + 
-  xlab('word count') +
-  xlim(250,1650)
-
-p17 = drawPredGroup(pred1, type_token_ratio) + 
-  xlab('verse type / token') +
-  xlim(.35,.8)
-
-p18 = drawPredGroup(pred2, type_token_ratio) +
-  xlab('verse type / token') +
-  xlim(.35,.8)
-
-pred_plot = wrap_plots(p13,p14,p15,p16,p17,p18, ncol = 2) + plot_layout(guides = 'collect') & theme(legend.position = 'left')
+pred_plot = p15 + p16
 
 # -- brainrot -- #
 
@@ -350,23 +300,8 @@ lines_plot = p19 + p20 + plot_layout(guides = 'collect') & theme(legend.position
 
 # -- accuracy -- #
 
-d1$pred = predict(fit0)
-
-n_yes1 = d1 |> 
-  mutate(yes = work == pred) |> 
-  filter(yes) |> 
-  nrow()
-
-n_yes1 / nrow(d1) # 30% vs guess: ~10%
-
-d2$pred = predict(fit4, type = 'class')
-
-n_yes2 = d2 |> 
-  mutate(yes = work == pred) |> 
-  filter(yes) |> 
-  nrow()
-
-n_yes2 / nrow(d2) # 23% vs guess: ~10%
+r2(fit11)
+r2(fit21)
 
 # -- draw -- #
 

@@ -79,7 +79,11 @@ Entropy is a measure of the unpredictability of a text. Sort of.
 
 $H(X) = - \sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$
 
-Entropy is shaped by the size of the underlying vocabulary and text size. So we need to keep an eye on the length of verses.
+Entropy is shaped by the size of the underlying vocabulary and text size as well as text structure.
+
+Complexity is an approximation of Kolmogorov complexity, the length of the gzip-compressed form of each verse.
+
+Wc is word count. Type / token ratio is the number of unique forms divided by the number of forms in each verse. So not quite type / token ratio in the usual sense, since there is no morphological parsing here.
 
 ![Descriptive statistics](viz/gospel_stats.png)
 
@@ -91,7 +95,7 @@ Measures correlate for original and normalised, but this varies across translati
 
 ![Correlations](viz/gospel_stats_correlations.png)
 
-We fit a multinomial LM predicting work from perplexity, verse avg word count, verse type token ratio. Model accuracy is 30% on original texts and 23% on normalised texts. Contrast with chance level of around 10%.
+We fit a multinomial LM predicting perplexity from work, with a verse random intercept nested under Gospel. Marginal r2 is .16 for original texts and .15 for normalised texts.
 
 ![Fitted](viz/gospel_preds.png)
 

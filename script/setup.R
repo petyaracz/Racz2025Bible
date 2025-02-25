@@ -48,7 +48,7 @@ setwd('~/Github/Racz2025Bible/')
 #   return(ngram_probabilities)
 # }
 
-# Function to calculate Shannon entropy
+# function to calculate Shannon entropy and perplexity
 calculateEntropy = function(df) {
   df |>
     # calculate the frequency of each word
@@ -61,6 +61,12 @@ calculateEntropy = function(df) {
       entropy = entropy(p, unit = "log2"),
       perplexity = 2^entropy
     )
+}
+
+# function to calculate Kolmogorov complexity
+calculateComplexity = function(text){
+  text_compressed = memCompress(text, type = 'gzip')
+  length(text_compressed)
 }
 
 # calc2 = partial(calculateNgramInformativity, n = 2)
@@ -104,6 +110,20 @@ ed = d |>
   ) |> 
   unnest(entropy_data)
 
+# -- complexity -- #
+
+cd = d |> 
+  summarise(
+    verse2 = paste(line, collapse = ' '),
+      .by = c(file_name,work,translation,year,description,analysis_original,analysis_normalised,type,book,verse)
+              ) |> 
+  rowwise() |> 
+  mutate(
+    complexity = calculateComplexity(verse2)
+  ) |> 
+  ungroup() |> 
+  select(-verse2)
+
 # -- descriptive stats -- #
 
 # word count and avg word length
@@ -121,6 +141,7 @@ id = d |>
 
 combined = ed |> 
   left_join(id) |> 
+  left_join(cd) |> 
   select(-data)
 
 # -- write -- #
