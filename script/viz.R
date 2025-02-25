@@ -139,9 +139,10 @@ p1 = ridgePlot(d1,work,perplexity) +
 
 p2 = ridgePlot(d1,work,complexity) +
   ggtitle('original text') +
+  xlab('verse complexity') +
   theme(
-    axis.text.x = element_blank(),
-    axis.ticks.x = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
     axis.title = element_blank()
   )
 
@@ -182,10 +183,10 @@ p6 = ridgePlot(d2,work,perplexity) +
 
 p7 = ridgePlot(d2,work,complexity) +
   ggtitle('original text') +
+  xlab('verse complexity') +
   theme(
-    axis.text.x = element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.title = element_blank()
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
   )
 
 p8 = ridgePlot(d2,work,wc) +
@@ -306,7 +307,7 @@ r2(fit21)
 # -- draw -- #
 
 info_plot
-ggsave('viz/gospel_stats.png', dpi = 900, width = 9, height = 7)
+ggsave('viz/gospel_stats.png', dpi = 900, width = 11, height = 7)
 
 cor_plot
 ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 6.22)
