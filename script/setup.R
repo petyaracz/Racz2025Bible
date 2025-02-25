@@ -114,15 +114,15 @@ ed = d |>
 
 cd = d |> 
   summarise(
-    verse2 = paste(line, collapse = ' '),
+    verse2 = paste(text, collapse = ' '),
       .by = c(file_name,work,translation,year,description,analysis_original,analysis_normalised,type,book,verse)
               ) |> 
   rowwise() |> 
   mutate(
     complexity = calculateComplexity(verse2)
   ) |> 
-  ungroup() |> 
-  select(-verse2)
+  ungroup() 
+  
 
 # -- descriptive stats -- #
 
@@ -142,7 +142,7 @@ id = d |>
 combined = ed |> 
   left_join(id) |> 
   left_join(cd) |> 
-  select(-data)
+  select(-data,-verse2)
 
 # -- write -- #
 

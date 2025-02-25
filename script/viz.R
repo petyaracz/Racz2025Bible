@@ -140,6 +140,7 @@ p1 = ridgePlot(d1,work,perplexity) +
 p2 = ridgePlot(d1,work,complexity) +
   ggtitle('original text') +
   xlab('verse complexity') +
+  xlim(108,4340) +
   theme(
     axis.text = element_blank(),
     axis.ticks = element_blank(),
@@ -184,6 +185,7 @@ p6 = ridgePlot(d2,work,perplexity) +
 p7 = ridgePlot(d2,work,complexity) +
   ggtitle('original text') +
   xlab('verse complexity') +
+  xlim(108,4340) +
   theme(
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank()
