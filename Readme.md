@@ -81,9 +81,17 @@ $H(X) = - \sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$
 
 Entropy is shaped by the size of the underlying vocabulary and text size as well as text structure.
 
-Complexity is an approximation of Kolmogorov complexity, the length of the gzip-compressed form of each verse.
+Complexity is an approximation of Kolmogorov complexity, it is the length of the gzip-compressed form of each verse.
 
-Wc is word count. Type / token ratio is the number of unique forms divided by the number of forms in each verse. So not quite type / token ratio in the usual sense, since there is no morphological parsing here.
+Wc is word count. Type / token ratio is the number of unique words divided by the number of words in each verse.
+
+These are correlated.
+
+![Predictor correlation](viz/gospel_varcor.png)
+
+They pattern differently across translations.
+
+The most predictive is type / token ratio but that has a lot to do with a systematic variation in word count -- you find more types in more words! The second most predictive is perplexity and it is more interesting.
 
 ![Descriptive statistics](viz/gospel_stats.png)
 
@@ -91,7 +99,7 @@ We can track changes in the perplexity of each verse across translations in this
 
 ![Descriptive statistics across verse](viz/gospel_lines.png)
 
-Measures correlate for original and normalised, but this varies across translations.
+Measures also correlate with themselves for original and normalised, but this varies across translations.
 
 ![Correlations](viz/gospel_stats_correlations.png)
 

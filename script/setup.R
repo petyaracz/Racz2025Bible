@@ -114,7 +114,7 @@ ed = d |>
 
 cd = d |> 
   summarise(
-    verse2 = paste(line, collapse = ' '),
+    verse2 = paste(text, collapse = ' '),
       .by = c(file_name,work,translation,year,description,analysis_original,analysis_normalised,type,book,verse)
               ) |> 
   rowwise() |> 
