@@ -38,27 +38,6 @@ d2 = d |>
 
 # -- check corr -- #
 
-with(d1, cor(type_token_ratio,complexity))
-with(d2, cor(type_token_ratio,complexity))
-with(d1, cor(wc,complexity))
-with(d2, cor(wc,complexity))
-
-p1 = d1 |> 
-  select(perplexity,complexity,wc,type_token_ratio) |> 
-  prcomp(center = TRUE, scale. = TRUE) |> 
-  autoplot(data = d1, loadings = TRUE, loadings.label = TRUE, loadings.colour = 'blue', loadings.label.size = 3, ) +
-  ggtitle("PCA Biplot") +
-  theme_minimal()
-
-p2 = d2 |> 
-  select(perplexity,complexity,wc,type_token_ratio) |> 
-  prcomp(center = TRUE, scale. = TRUE) |> 
-  autoplot(data = d1, loadings = TRUE, loadings.label = TRUE, loadings.colour = 'blue', loadings.label.size = 3, ) +
-  ggtitle("PCA Biplot") +
-  theme_minimal()
-
-p1 + p2
-
 # -- fit -- #
 
 # watch out for collinearity, you can probs have one predictor per whatever

@@ -4,7 +4,8 @@ library(tidyverse)
 library(glue)
 library(ggthemes)
 library(ggridges)
-library(nnet)
+library(lme4)
+library(performance)
 library(patchwork)
 library(sjPlot)
 
@@ -85,35 +86,25 @@ d_cor = left_join(d1b,d2b) |>
 fit11 = lmer(perplexity ~ work + (1 | book/verse), data = d1)
 fit21 = lmer(perplexity ~ work + (1 | book/verse), data = d2)
 
-# -- viz: info -- #
+# -- viz: var cor -- #
 
-# info2 |> 
-#   filter(type == 'facsimile') |> 
-#   mutate(
-#     translation = fct_reorder(translation, -year),
-#     book = fct_relevel(book, 'Jn', 'Lk', 'Mk', 'Mt')
-#     ) |> 
-#   ggplot(aes(information,translation)) +
-#   geom_density_ridges() +
-#   facet_wrap( ~ book, ncol = 4) +
-#   theme_minimal() +
-#   xlab('Gospel') +
-#   ylab('Bigram information density (original)')
-# ggsave('viz/gospel_bigram_info.pdf', width = 6, height = 6)
-# 
-# info3 |> 
-#   filter(type == 'facsimile') |> 
-#   mutate(
-#     translation = fct_reorder(translation, -year),
-#     book = fct_relevel(book, 'Jn', 'Lk', 'Mk', 'Mt')
-#   ) |> 
-#   ggplot(aes(information,translation)) +
-#   geom_density_ridges() +
-#   facet_wrap( ~ book, ncol = 4) +
-#   theme_minimal() +
-#   xlab('Gospel') +
-#   ylab('Trigram information density (original)')
-# ggsave('viz/gospel_trigram_info.pdf', width = 6, height = 6)
+
+p01 = d1 |> 
+  select(perplexity,complexity,wc,type_token_ratio) |> 
+  prcomp(center = TRUE, scale. = TRUE) |> 
+  autoplot(data = d1, loadings = TRUE, loadings.label = TRUE, loadings.colour = 'blue', loadings.label.size = 3, ) +
+  ggtitle("PCA Biplot") +
+  theme_minimal()
+
+p02 = d2 |> 
+  select(perplexity,complexity,wc,type_token_ratio) |> 
+  prcomp(center = TRUE, scale. = TRUE) |> 
+  autoplot(data = d1, loadings = TRUE, loadings.label = TRUE, loadings.colour = 'blue', loadings.label.size = 3, ) +
+  ggtitle("PCA Biplot") +
+  theme_minimal()
+
+var_cors_plot = p01 + p02
+
 
 # -- viz: stats -- #
 
@@ -224,6 +215,8 @@ info_plot = wrap_plots(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10, nrow = 2)
 
 p11 = drawCor(d_cor,perplexity_orig,perplexity_norm)  +
   ggtitle('verse perplexity')
+p11b  = drawCor(d_cor,complexity_orig,complexity_norm)  +
+  ggtitle('verse perplexity')
 p12 = drawCor(d_cor,wc_orig,wc_norm) +
   ggtitle('verse word count')
 p13 = drawCor(d_cor,avg_word_length_orig,avg_word_length_norm)  +
@@ -231,7 +224,7 @@ p13 = drawCor(d_cor,avg_word_length_orig,avg_word_length_norm)  +
 p14 = drawCor(d_cor,type_token_ratio_orig,type_token_ratio_norm)  +
   ggtitle('verse type token ratio')
 
-cor_plot = (p11 + p12) / (p13 + p14) + plot_layout(guides = "collect") & theme(legend.position = 'left')
+cor_plot = (p11 + p11b + p12) / (p13 + p14 + plot_spacer()) + plot_layout(guides = "collect") & theme(legend.position = 'left')
 
 # -- viz: preds -- #
 
@@ -308,14 +301,17 @@ r2(fit21)
 
 # -- draw -- #
 
+var_cors_plot
+ggsave('viz/gospel_varcor.png', dpi = 900, width = 8, height = 6.22)
+
 info_plot
 ggsave('viz/gospel_stats.png', dpi = 900, width = 11, height = 7)
 
 cor_plot
-ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 6.22)
+ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 4)
 
 pred_plot
-ggsave('viz/gospel_preds.png', dpi = 900, width = 8, height = 6.22)
+ggsave('viz/gospel_preds.png', dpi = 900, width = 8, height = 4)
 
 lines_plot
 ggsave('viz/gospel_lines.png', dpi = 900, width = 8, height = 6.22)
