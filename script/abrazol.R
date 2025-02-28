@@ -57,6 +57,7 @@ drawCor = function(d_cor,col1,col2){
 }
 
 d = read_tsv('dat/gospel_entropy.tsv')
+diffs = read_tsv('dat/parallel.gz')
 
 # -- setup -- #
 
@@ -71,6 +72,11 @@ d = d |>
     "szavak száma" = wc,
     "típus / token arány" = type_token_ratio
   ) 
+
+diffs = diffs |> 
+  mutate(
+    work = fct_reorder(work, -year)
+  )
 
 d1 = d |> 
   filter(
@@ -92,7 +98,7 @@ d2b = d2 |>
   select(work,year,book,verse,bizonytalanság,összetettség,`szavak száma`,`típus / token arány`) |> 
   rename_with(~ paste0(., ", normalizált"), -c(work,year,book,verse))
 
-d_cor = left_join(d1b,d2b) |> 
+d_cor = left_join(d1b,d2b) |>
   mutate(work = fct_rev(work)) # I need these in this order here
 
 illeszték11 = lmer(bizonytalanság ~ fordítás + (1 | book/verse), data = d1)
@@ -287,6 +293,10 @@ lines_plot_h = p19 + p20 + plot_layout(guides = 'collect') & theme(legend.positi
 r2(fit11)
 r2(fit21)
 
+# -- diffs -- #
+
+diff_h = ridgePlot(diffs, work, verse_diff) + xlab('betűhű és normalizált\nszöveg távolsága')
+
 # -- draw -- #
 
 var_cors_plot_h
@@ -303,3 +313,6 @@ ggsave('abra/gospel_preds_h.png', dpi = 900, width = 8, height = 4)
 
 lines_plot_h
 ggsave('abra/gospel_lines_h.png', dpi = 900, width = 8, height = 6.22)
+
+diff_h 
+ggsave('abra/gospel_diff_h.png', dpi = 900, width = 8, height = 3.11)
