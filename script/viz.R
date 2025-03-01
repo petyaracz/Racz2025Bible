@@ -4,6 +4,7 @@ library(tidyverse)
 library(glue)
 library(ggthemes)
 library(ggridges)
+library(ggfortify)
 library(lme4)
 library(performance)
 library(patchwork)
@@ -13,7 +14,26 @@ setwd('~/Github/Racz2025Bible/')
 
 # -- fun -- #
 
+magyarni = function(dat){
+  dat |> 
+    mutate(
+      típus = case_when(
+        type == 'facsimile' ~ 'betűhű',
+        type == 'normalised' ~ 'normalizált',
+        type == 'modern' ~ 'modern'
+      )
+    ) |> 
+    rename(
+      'bizonytalanság' = perplexity,
+      'összetettség' = complexity,
+      'szószám' = wc,
+      'típus/token' = type_token_ratio,
+      'betűhű/normalizált' = verse_diff
+    )
+}
+
 paired_palette = RColorBrewer::brewer.pal(11, "Paired")
+quantile_palette = c("#E6E6E6", "#AEAEAE", "#AEAEAE", "#E6E6E6")
 
 # take dat colnames return ridge plot w/ quantiles
 ridgePlot = function(dat,col1,col2){
@@ -27,7 +47,7 @@ ridgePlot = function(dat,col1,col2){
       rel_min_height = 0.01,
       scale = 1.33
     ) +
-    scale_fill_viridis_d(name = "Quartiles", option = 'C') +
+    scale_fill_manual(name = "Quartiles", values = quantile_palette) +
     theme_minimal() +
     guides(fill = 'none') +
     theme(
@@ -51,267 +71,217 @@ drawCor = function(d_cor,col1,col2){
     ylab('original')
 }
 
+# -- read -- #
+
 d = read_tsv('dat/gospel_entropy.tsv')
 
 # -- setup -- #
 
 d = d |> 
   mutate(
-    work = fct_reorder(work, -year)
+    work2 = work |> 
+      str_replace('(\\: Újtestamentum| fordítása)', '') |> 
+      str_replace('-kódex', ' kódex') |> 
+      str_replace('István Társulati', 'István\nTársulati') |> 
+      str_replace('Bibliatársulat újfordítású', 'Bibliatársulat\nújfordítású') |> 
+      str_replace('Gáspár Vizsolyi', 'Gáspár\nVizsolyi') |> 
+      str_replace(', ', ',\n'),
+    work2 = fct_reorder(work2, -year)
   )
 
-d1 = d |> 
-  filter(
-    analysis_original
-  )
+d2 = filter(d, type != 'facsimile')
 
-d2 = d |> 
-  filter(
-    analysis_normalised
-  )
-
-d1b = d1 |> 
-  filter(!translation %in% c('RUF','SzIT','KaldiNeo', 'KaroliRevid')) |> 
-  select(work,year,book,verse,perplexity,complexity,wc,avg_word_length,type_token_ratio) |> 
-  rename_with(~ paste0(., "_orig"), -c(work,year,book,verse))
-
-d2b = d2 |> 
-  filter(!translation %in% c('RUF','SzIT','KaldiNeo', 'KaroliRevid')) |> 
-  select(work,year,book,verse,perplexity,complexity,wc,avg_word_length,type_token_ratio) |> 
-  rename_with(~ paste0(., "_norm"), -c(work,year,book,verse))
-
-d_cor = left_join(d1b,d2b) |> 
-  mutate(work = fct_rev(work)) # I need these in this order here
-
-fit11 = lmer(perplexity ~ work + (1 | book/verse), data = d1)
-fit21 = lmer(perplexity ~ work + (1 | book/verse), data = d2)
-
-# -- viz: var cor -- #
+lm1 = lmer(perplexity ~ work + (1| book/verse), data = d2)
+lm2 = lmer(complexity ~ work + (1| book/verse), data = d2)
 
 
-p01 = d1 |> 
-  select(perplexity,complexity,wc,type_token_ratio) |> 
-  prcomp(center = TRUE, scale. = TRUE) |> 
-  autoplot(data = d1, loadings = TRUE, loadings.label = TRUE, loadings.colour = 'blue', loadings.label.size = 3, ) +
-  ggtitle("PCA Biplot") +
-  theme_minimal()
+# -- viz -- #
 
-p02 = d2 |> 
-  select(perplexity,complexity,wc,type_token_ratio) |> 
-  prcomp(center = TRUE, scale. = TRUE) |> 
-  autoplot(data = d1, loadings = TRUE, loadings.label = TRUE, loadings.colour = 'blue', loadings.label.size = 3, ) +
-  ggtitle("PCA Biplot") +
-  theme_minimal()
+## pca on variables
 
-var_cors_plot = p01 + p02
+# drop modern texts, group by type, nest, build prcomp, build autoplot
+prcomps = d |> 
+  magyarni() |> 
+  select(típus,bizonytalanság,összetettség,szószám,`típus/token`) |> 
+  nest(.by = típus) |> 
+  mutate(
+    prcomp = map(
+      data, 
+      ~ prcomp(., center = TRUE, scale. = TRUE)
+      ),
+    autoplot = pmap(
+      list(prcomp, data, típus), 
+      ~ autoplot(
+          ..1, 
+          data = ..2, 
+          loadings = TRUE, 
+          loadings.label = TRUE, 
+          loadings.colour = 'lightgrey', 
+          loadings.label.size = 3, 
+          shape = FALSE, 
+          label.size = 0
+        ) + 
+        ggtitle(..3) + 
+        theme_few()
+      )
+  ) |> 
+  pull(autoplot)
 
+wrap_plots(prcomps)
+ggsave('viz/gospel_varcorr.png', dpi = 900, width = 9.4, height = 3)
 
-# -- viz: stats -- #
+## facsimile: stats
 
-range(d1$perplexity)
-range(d2$perplexity)
-range(d1$complexity)
-range(d2$complexity)
-range(d1$wc)
-range(d2$wc)
-range(d1$avg_word_length)
-range(d2$avg_word_length)
-range(d1$type_token_ratio)
-range(d2$type_token_ratio)
+p11 = d |> 
+  filter(type == 'facsimile') |> 
+  ridgePlot(work2,perplexity) +
+  xlab('bizonytalansági\neloszlások') +
+  ggtitle('betűhű szövegek')
 
-p1 = ridgePlot(d1,work,perplexity) +
-  ggtitle('original text') +
-  xlim(90,410) +
-  theme(
-    axis.text.x = element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.title = element_blank()
-  )
+p12 = d |> 
+  filter(type == 'facsimile') |> 
+  ridgePlot(work2,complexity) +
+  xlab('összetettségi\neloszlások') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-p2 = ridgePlot(d1,work,complexity) +
-  ggtitle('original text') +
-  xlab('verse complexity') +
-  xlim(108,4340) +
-  theme(
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    axis.title = element_blank()
-  )
+p13 = d |> 
+  filter(type == 'facsimile') |> 
+  ridgePlot(work2,wc) +
+  xlab('szószám\neloszlások') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-p3 = ridgePlot(d1,work,wc) +
-  # ggtitle('original text') +
-  xlab('verse word count') +
-  xlim(250,1650) +
-  theme(
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    axis.title = element_blank()
-  )
+p14 = d |> 
+  filter(type == 'facsimile') |> 
+  ridgePlot(work2,type_token_ratio) +
+  xlab('típus/token arány\neloszlások') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-p4 = ridgePlot(d1,work,avg_word_length) +
-  # ggtitle('original text') +
-  xlab('verse avg. word length') +
-  xlim(4,6.1) +
-  theme(
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    axis.title = element_blank()
-  )
+p15 = d |> 
+  filter(type == 'facsimile') |> 
+  ridgePlot(work2,verse_diff) +
+  xlab('betűhű-normalizált átfedési\neloszlások') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-p5 = ridgePlot(d1,work,type_token_ratio) +
-  # ggtitle('original text') +
-  xlab('verse type/token') +
-  xlim(.35,.9) +
-  theme(
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    axis.title = element_blank()
-  )
+wrap_plots(p11,p12,p13,p14,p15, nrow = 1)
+ggsave('viz/gospel_stats_facsimile.png', dpi = 900, width = 10, height = 5)
 
-p6 = ridgePlot(d2,work,perplexity) +
-  ggtitle('normalised text') +
-  xlab('verse perplexity') +
-  xlim(90,410)
+## normalised
 
-p7 = ridgePlot(d2,work,complexity) +
-  ggtitle('original text') +
-  xlab('verse complexity') +
-  xlim(108,4340) +
-  theme(
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
-  )
+p21 = d |> 
+  filter(type != 'facsimile') |> 
+  ridgePlot(work2,perplexity) +
+  geom_hline(yintercept = 5, lty = 3) +
+  xlab('bizonytalansági\neloszlások') +
+  ggtitle('normalizált szövegek')
 
-p8 = ridgePlot(d2,work,wc) +
-  # ggtitle('normalised text') +
-  xlim(250,1650) +
-  xlab('verse word count') +
-  theme(
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
-  )
+p22 = d |> 
+  filter(type != 'facsimile') |> 
+  ridgePlot(work2,complexity) +
+  geom_hline(yintercept = 5, lty = 3) +
+  xlab('összetettségi\neloszlások') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-p9 = ridgePlot(d1,work,avg_word_length) +
-  # ggtitle('original text') +
-  xlab('verse avg. word length') +
-  xlim(4,6.1) +
-  theme(
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
-  )
+p23 = d |> 
+  filter(type != 'facsimile') |> 
+  ridgePlot(work2,wc) +
+  geom_hline(yintercept = 5, lty = 3) +
+  xlab('szószám\neloszlások') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-p10 = ridgePlot(d2,work,type_token_ratio) +
-  xlab('verse type/token') +
-  xlim(.35,.9) +
-  theme(
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
-  )
+p24 = d |> 
+  filter(type != 'facsimile') |> 
+  ridgePlot(work2,type_token_ratio) +
+  geom_hline(yintercept = 5, lty = 3) +
+  xlab('típus/token arány\neloszlások') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-info_plot = wrap_plots(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10, nrow = 2)
+wrap_plots(p21,p22,p23,p24, nrow = 1)
+ggsave('viz/gospel_stats_normalised.png', dpi = 900, width = 9, height = 6.5)
 
-# -- viz: corr -- #
-## cors
+## pred
 
-p11 = drawCor(d_cor,perplexity_orig,perplexity_norm)  +
-  ggtitle('verse perplexity')
-p11b  = drawCor(d_cor,complexity_orig,complexity_norm)  +
-  ggtitle('verse perplexity')
-p12 = drawCor(d_cor,wc_orig,wc_norm) +
-  ggtitle('verse word count')
-p13 = drawCor(d_cor,avg_word_length_orig,avg_word_length_norm)  +
-  ggtitle('verse average word length')
-p14 = drawCor(d_cor,type_token_ratio_orig,type_token_ratio_norm)  +
-  ggtitle('verse type token ratio')
+r21 = round(r2(lm1)[[2]],2)
+r22 = round(r2(lm2)[[2]],2)
 
-cor_plot = (p11 + p11b + p12) / (p13 + p14 + plot_spacer()) + plot_layout(guides = "collect") & theme(legend.position = 'left')
-
-# -- viz: preds -- #
-
-# 15,16
-p15 = plot_model(fit11, 'pred', terms = 'work') +
-  coord_flip() +
-  theme_minimal() +
-  theme(axis.title.y = element_blank()) +
-  ylim(90,410) +
-  ggtitle('Predicted perplexity, original texts')
-
-p16 = plot_model(fit21, 'pred', terms = 'work') +
+p31 = plot_model(lm1, 'pred', terms = 'work') +
   coord_flip() +
   theme_minimal() +
   theme(
     axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
-        ) +
-  ylim(90,410) +
-  ggtitle('Predicted perplexity, normalised texts')
+    panel.grid.major.y = element_blank(),  # Remove major horizontal grid lines
+    panel.grid.minor.y = element_blank()   # Remove minor horizontal grid lines
+  ) +
+  ylab(glue('bizonytalanság (m. r2 = {r21})')) +
+  ggtitle('jósolt értékek (normalizált / modern szövegek)') +
+  geom_vline(xintercept = 4.5, lty = 3)
 
-pred_plot = p15 + p16
-
-# -- brainrot -- #
-
-p19 = d1 |> 
-  mutate(
-    work = fct_rev(work),
-    book = fct_rev(book)
-         ) |> 
-  ggplot(aes(work,perplexity, group = verse, colour = verse)) +
-  facet_wrap( ~ book) +
-  scale_colour_viridis_c(option = 'turbo') +
-  geom_line() +
+p32 = plot_model(lm2, 'pred', terms = 'work') +
+  coord_flip() +
   theme_minimal() +
   theme(
-    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
-    axis.title.x = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-    ) +
-  ggtitle('Original text') +
-  ylim(90,410)
-
-p20 = d2 |> 
-  mutate(
-    work = fct_rev(work),
-    book = fct_rev(book)
-  ) |> 
-  ggplot(aes(work,perplexity, group = verse, colour = verse)) +
-  facet_wrap( ~ book) +
-  scale_colour_viridis_c(option = 'turbo') +
-  geom_line() +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
-    axis.title.x = element_blank(),
     axis.title.y = element_blank(),
     axis.text.y = element_blank(),
     axis.ticks.y = element_blank(),
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank()
-    ) +
-  ggtitle('Normalised text') + 
-  ylim(90,410)
+    panel.grid.major.y = element_blank(),  # Remove major horizontal grid lines
+    panel.grid.minor.y = element_blank(),   # Remove minor horizontal grid lines
+    plot.title = element_blank()
+  ) +
+  ylab(glue('összetettség (m. r2 = {r22})')) +
+  geom_vline(xintercept = 4.5, lty = 3)
 
-lines_plot = p19 + p20 + plot_layout(guides = 'collect') & theme(legend.position = 'left')
+p31 + p32
 
-# -- accuracy -- #
+ggsave('viz/gospel_preds.png', dpi = 900, width = 7, height = 4)
 
-r2(fit11)
-r2(fit21)
+# -- brainrot -- #
 
-# -- draw -- #
+facet_labels = c(
+  'facsimile' = 'betűhű',
+  'normalised' = 'normalizált'
+)
 
-var_cors_plot
-ggsave('viz/gospel_varcor.png', dpi = 900, width = 8, height = 6.22)
-
-info_plot
-ggsave('viz/gospel_stats.png', dpi = 900, width = 11, height = 7)
-
-cor_plot
-ggsave('viz/gospel_stats_correlations.png', dpi = 900, width = 8, height = 4)
-
-pred_plot
-ggsave('viz/gospel_preds.png', dpi = 900, width = 8, height = 4)
-
-lines_plot
-ggsave('viz/gospel_lines.png', dpi = 900, width = 8, height = 6.22)
+matthew_plots = d |> 
+  filter(
+    book == 'Mt', 
+    verse %in% 5:7,
+    type != 'modern'
+    ) |> 
+  mutate(
+    work = fct_rev(work),
+    verse2 = glue('Máté {verse}')
+         ) |> 
+  rename(
+    bizonytalanság = perplexity,
+    összetettség = complexity
+  ) |> 
+  select(work,type,verse2,bizonytalanság,összetettség) |> 
+  pivot_longer(-c(work,type,verse2)) |> 
+  nest(.by = c(name)) |> 
+  mutate(
+    plot = pmap(
+      list(data, name),
+      ~ ggplot(
+          ..1,
+          aes(work,value, group = verse2, colour = verse2, lty = verse2)
+        ) +
+        scale_colour_grey() +
+        geom_line() +
+        theme_minimal() +
+        theme(
+          axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
+          axis.title.x = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank()
+        ) +
+        labs(
+          y = ..2,
+          colour = 'vers', 
+          lty = 'vers'
+        ) +
+        facet_wrap( ~ type, ncol = 1, labeller = labeller(type = facet_labels))
+    )
+  ) |> 
+  pull(plot)
+  
+wrap_plots(matthew_plots) + plot_layout(guides = 'collect') & theme(legend.position = 'left')
+ggsave('viz/gospel_matthew.png', dpi = 900, width = 7, height = 4)
