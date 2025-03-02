@@ -275,8 +275,8 @@ matthew_plots = d |>
         ) +
         labs(
           y = ..2,
-          colour = 'vers', 
-          lty = 'vers'
+          colour = 'fejezet', 
+          lty = 'fejezet'
         ) +
         facet_wrap( ~ type, ncol = 1, labeller = labeller(type = facet_labels))
     )
