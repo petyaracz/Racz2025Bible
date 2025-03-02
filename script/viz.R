@@ -28,7 +28,7 @@ magyarni = function(dat){
       'összetettség' = complexity,
       'szószám' = wc,
       'típus/token' = type_token_ratio,
-      'betűhű/normalizált' = verse_diff
+      'betűhű/normalizált' = chapter_diff
     )
 }
 
@@ -91,8 +91,8 @@ d = d |>
 
 d2 = filter(d, type != 'facsimile')
 
-lm1 = lmer(perplexity ~ work + (1| book/verse), data = d2)
-lm2 = lmer(complexity ~ work + (1| book/verse), data = d2)
+lm1 = lmer(perplexity ~ work + (1| book/chapter), data = d2)
+lm2 = lmer(complexity ~ work + (1| book/chapter), data = d2)
 
 
 # -- viz -- #
@@ -158,7 +158,7 @@ p14 = d |>
 
 p15 = d |> 
   filter(type == 'facsimile') |> 
-  ridgePlot(work2,verse_diff) +
+  ridgePlot(work2,chapter_diff) +
   xlab('betűhű-normalizált átfedési\neloszlások') +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
@@ -243,26 +243,26 @@ facet_labels = c(
 matthew_plots = d |> 
   filter(
     book == 'Mt', 
-    verse %in% 5:7,
+    chapter %in% 5:7,
     type != 'modern'
     ) |> 
   mutate(
     work = fct_rev(work),
-    verse2 = glue('Máté {verse}')
+    chapter2 = glue('Máté {chapter}')
          ) |> 
   rename(
     bizonytalanság = perplexity,
     összetettség = complexity
   ) |> 
-  select(work,type,verse2,bizonytalanság,összetettség) |> 
-  pivot_longer(-c(work,type,verse2)) |> 
+  select(work,type,chapter2,bizonytalanság,összetettség) |> 
+  pivot_longer(-c(work,type,chapter2)) |> 
   nest(.by = c(name)) |> 
   mutate(
     plot = pmap(
       list(data, name),
       ~ ggplot(
           ..1,
-          aes(work,value, group = verse2, colour = verse2, lty = verse2)
+          aes(work,value, group = chapter2, colour = chapter2, lty = chapter2)
         ) +
         scale_colour_grey() +
         geom_line() +

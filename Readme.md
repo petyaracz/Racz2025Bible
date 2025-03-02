@@ -24,7 +24,7 @@ Misztótfalusi Kis Miklós not included, because only the normalised version is 
 
 - dat
 	- bible_matcher.tsv: descriptions from https://parallelbible.nytud.hu/
-	- gospel_entropy.tsv: entropies and other information stats across verses
+	- gospel_entropy.tsv: entropies and other information stats across chapters
 	- gospels.gz: combined gospel texts
 - script
 	- model.R: fit stan models
@@ -32,17 +32,17 @@ Misztótfalusi Kis Miklós not included, because only the normalised version is 
 	- source.R: draw data from clone of https://github.com/nytud/parallelbible
 	- viz.R: draw viz. model preds are drawn in model.R
 - viz
-	- gospel_stats_correlations.png: correlations of stats calced on normalised and original verses
-	- gospel_stats_original.png: stats calced on original verses
-	- gospel_stats_normalised.png: ~ normalised verses
+	- gospel_stats_correlations.png: correlations of stats calced on normalised and original chapters
+	- gospel_stats_original.png: stats calced on original chapters
+	- gospel_stats_normalised.png: ~ normalised chapters
 	- predictions.png: model predictions
 
 ## data dict
 
 gospels.gz
 
-- chr (7): translation, description, type, file_name, book, line, text
-- dbl (2): year, verse
+- chr (7): translation, description, type, file_name, book, verse, text
+- dbl (2): year, chapter
 
 gospel_entropy.tsv
 
@@ -51,13 +51,13 @@ gospel_entropy.tsv
  - description     : chr ... description from original
  - type            : chr ... type: original facsimile text (betuhu), normalised, or modern
  - book            : chr ... Mt, Mk, Lk, Jn
- - verse           : num ... verse num
- - entropy         : num ... verse entropy, see script/setup.R
- - perplexity      : num ... verse perplexity, ~
- - wc              : num ... verse word count, ~
- - avg_word_length : num ... verse avg word length, ~
- - type_count      : num ... verse type count, ~
- - type_token_ratio: num ... verse type / token ratio, ~
+ - chapter           : num ... chapter num
+ - entropy         : num ... chapter entropy, see script/setup.R
+ - perplexity      : num ... chapter perplexity, ~
+ - wc              : num ... chapter word count, ~
+ - avg_word_length : num ... chapter avg word length, ~
+ - type_count      : num ... chapter type count, ~
+ - type_token_ratio: num ... chapter type / token ratio, ~
 
 ## text densities
 
@@ -69,7 +69,7 @@ Text is either original / facsimile or normalised. Here's Mark 6:11.
 
 For the modern translations, the two are the same.
 
-We calculate the perplexity of individual verses in the four Books of the Gospel across translations for original / normalised.
+We calculate the perplexity of individual chapters in the four Books of the Gospel across translations for original / normalised.
 
 Perplexity is an exponential function of entropy.
 
@@ -81,9 +81,9 @@ $H(X) = - \sum_{i=1}^{n} P(x_i) \log_2 P(x_i)$
 
 Entropy is shaped by the size of the underlying vocabulary and text size as well as text structure.
 
-Complexity is an approximation of Kolmogorov complexity, it is the length of the gzip-compressed form of each verse.
+Complexity is an approximation of Kolmogorov complexity, it is the length of the gzip-compressed form of each chapter.
 
-Wc is word count. Type / token ratio is the number of unique words divided by the number of words in each verse.
+Wc is word count. Type / token ratio is the number of unique words divided by the number of words in each chapter.
 
 These are correlated.
 
@@ -95,15 +95,15 @@ The most predictive is type / token ratio but that has a lot to do with a system
 
 ![Descriptive statistics](viz/gospel_stats.png)
 
-We can track changes in the perplexity of each verse across translations in this plot of highly questionable utility.
+We can track changes in the perplexity of each chapter across translations in this plot of highly questionable utility.
 
-![Descriptive statistics across verse](viz/gospel_lines.png)
+![Descriptive statistics across chapter](viz/gospel_lines.png)
 
 Measures also correlate with themselves for original and normalised, but this varies across translations.
 
 ![Correlations](viz/gospel_stats_correlations.png)
 
-We fit a multinomial LM predicting perplexity from work, with a verse random intercept nested under Gospel. Marginal r2 is .16 for original texts and .15 for normalised texts.
+We fit a multinomial LM predicting perplexity from work, with a chapter random intercept nested under Gospel. Marginal r2 is .16 for original texts and .15 for normalised texts.
 
 ![Fitted](viz/gospel_preds.png)
 

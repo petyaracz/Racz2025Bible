@@ -1,4 +1,4 @@
-# load gospel file (output of source.R) add information stats across verses (not lines!), write to files
+# load gospel file (output of source.R) add information stats across chapters (not verses!), write to files
 
 # -- head -- #
 
@@ -41,14 +41,14 @@ d = read_tsv('dat/gospels.gz')
 
 # d |> distinct(book)
 # d |> distinct(translation)
+# range(d$chapter)
 # range(d$verse)
-# range(d$line)
 
 # -- entropy and perplexity -- #
 
 ed = d |> 
   unnest_tokens(word, text, drop = F) |> 
-  nest(.by = c(file_name,work,translation,year,description,analysis_original,analysis_normalised,type,book,verse)) |> 
+  nest(.by = c(file_name,work,translation,year,description,analysis_original,analysis_normalised,type,book,chapter)) |> 
   mutate(
     entropy_data = map(data, calculateEntropy)
   ) |> 
@@ -58,12 +58,12 @@ ed = d |>
 
 cd = d |> 
   summarise(
-    verse2 = paste(text, collapse = ' '),
-      .by = c(file_name,work,translation,year,description,analysis_original,analysis_normalised,type,book,verse)
+    chapter2 = paste(text, collapse = ' '),
+      .by = c(file_name,work,translation,year,description,analysis_original,analysis_normalised,type,book,chapter)
               ) |> 
   rowwise() |> 
   mutate(
-    complexity = calculateComplexity(verse2)
+    complexity = calculateComplexity(chapter2)
   ) |> 
   ungroup() 
   
@@ -76,24 +76,24 @@ id = d |>
     wc = n(),
     type_count = n_distinct(word),
     type_token_ratio = type_count / wc,
-    .by = c(file_name,work,translation,year,description,analysis_original,analysis_normalised,type,book,verse)
+    .by = c(file_name,work,translation,year,description,analysis_original,analysis_normalised,type,book,chapter)
   )
 
 # -- facsimile / normalised diff -- #
 
-# jaccard distance between facsimile and normalised per verse
+# jaccard distance between facsimile and normalised per chapter
 diffs = d |> 
   filter(!translation %in% c('RUF','SzIT','KaldiNeo', 'KaroliRevid')) |> # these have only modern text
-  select(work,year,type,book,verse,text) |> 
+  select(work,year,type,book,chapter,text) |> 
   summarise(
-    verse_text = paste(text, collapse = ' '),
-    .by = c(work,year,type,book,verse)
+    chapter_text = paste(text, collapse = ' '),
+    .by = c(work,year,type,book,chapter)
   ) |> 
-  pivot_wider(names_from = type, values_from = verse_text) |> 
+  pivot_wider(names_from = type, values_from = chapter_text) |> 
   mutate(
-    verse_diff = stringdist(facsimile,normalised, method = 'jaccard')
+    chapter_diff = stringdist(facsimile,normalised, method = 'jaccard')
   ) |> 
-  select(work,year,book,verse,verse_diff)
+  select(work,year,book,chapter,chapter_diff)
 
 # -- combine -- #
 
@@ -101,7 +101,7 @@ combined = ed |>
   left_join(id) |> 
   left_join(cd) |> 
   left_join(diffs) |> 
-  select(-data,-verse2) |> 
+  select(-data,-chapter2) |> 
   mutate(
     period = ifelse(translation %in% c('RUF','SzIT','KaldiNeo', 'KaroliRevid'), 'modern','mediaeval / early modern')
   )
@@ -110,13 +110,13 @@ combined = ed |>
 
 c1 = combined |> 
   filter(type == 'facsimile', period != 'modern') |> 
-  select(work,year,book,verse,perplexity,complexity,wc,type_token_ratio) |> 
-  rename_with(~ paste0(., "_orig"), -c(work,year,book,verse))
+  select(work,year,book,chapter,perplexity,complexity,wc,type_token_ratio) |> 
+  rename_with(~ paste0(., "_orig"), -c(work,year,book,chapter))
 
 c2 = combined |> 
   filter(type == 'normalised', period != 'modern') |> 
-  select(work,year,book,verse,perplexity,complexity,wc,type_token_ratio) |> 
-  rename_with(~ paste0(., "_norm"), -c(work,year,book,verse))
+  select(work,year,book,chapter,perplexity,complexity,wc,type_token_ratio) |> 
+  rename_with(~ paste0(., "_norm"), -c(work,year,book,chapter))
 
 c3 = left_join(c1,c2)
 

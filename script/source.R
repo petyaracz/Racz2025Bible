@@ -16,7 +16,7 @@ readText = function(file_name,my_url){
   text_location = glue('{my_url}{file_name}')
   # read all as char, because some files have "-" in num cols
   my_text = read_tsv(text_location, col_names = F, col_types = cols(.default = col_character()))
-  names(my_text) = c('book', 'verse', 'line', 'text')
+  names(my_text) = c('book', 'chapter', 'verse', 'text')
   return(my_text)
 }
 
@@ -73,7 +73,7 @@ gospel_texts_unnested |>
   filter(n != 4)
 
 # gospel_texts_unnested |>
-#   distinct(book,verse) |> View()
+#   distinct(book,chapter) |> View()
 
 # -- add info -- #
 
