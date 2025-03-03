@@ -94,6 +94,11 @@ d2 = filter(d, type != 'facsimile')
 lm1 = lmer(perplexity ~ work + (1| book/chapter), data = d2)
 lm2 = lmer(complexity ~ work + (1| book/chapter), data = d2)
 
+lm1b = lmer(perplexity ~ 1 + (1| book/chapter), data = d2)
+lm2b = lmer(complexity ~ 1 + (1| book/chapter), data = d2)
+
+plot(compare_performance(lm1,lm1b))
+plot(compare_performance(lm2,lm2b))
 
 # -- viz -- #
 
