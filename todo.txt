@@ -1,1 +1,0 @@
-fix https://github.com/nytud/parallelbible/issues/1
