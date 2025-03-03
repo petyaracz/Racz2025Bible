@@ -85,28 +85,6 @@ Complexity is an approximation of Kolmogorov complexity, it is the length of the
 
 Wc is word count. Type / token ratio is the number of unique words divided by the number of words in each chapter.
 
-These are correlated.
-
-![Predictor correlation](viz/gospel_varcor.png)
-
-They pattern differently across translations.
-
-The most predictive is type / token ratio but that has a lot to do with a systematic variation in word count -- you find more types in more words! The second most predictive is perplexity and it is more interesting.
-
-![Descriptive statistics](viz/gospel_stats.png)
-
-We can track changes in the perplexity of each chapter across translations in this plot of highly questionable utility.
-
-![Descriptive statistics across chapter](viz/gospel_lines.png)
-
-Measures also correlate with themselves for original and normalised, but this varies across translations.
-
-![Correlations](viz/gospel_stats_correlations.png)
-
-We fit a multinomial LM predicting perplexity from work, with a chapter random intercept nested under Gospel. Marginal r2 is .16 for original texts and .15 for normalised texts.
-
-![Fitted](viz/gospel_preds.png)
-
 ## References
 
 Simon, Eszter and Ágnes Kalivoda. A Párhuzamos Bibliakorpusz és Bibliaolvasó fejlesztése. In Általános Nyelvészeti Tanulmányok XXXII., edited by István Kenesei, Éva Dékány, Tamás Halm, and Balázs Surányi. Budapest: Akadémiai Kiadó, 2020.
