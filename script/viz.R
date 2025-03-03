@@ -159,7 +159,7 @@ p14 = d |>
 p15 = d |> 
   filter(type == 'facsimile') |> 
   ridgePlot(work2,chapter_diff) +
-  xlab('betűhű-normalizált átfedési\neloszlások') +
+  xlab('betűhű-normalizált\ntávolság') +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
 wrap_plots(p11,p12,p13,p14,p15, nrow = 1)
