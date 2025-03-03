@@ -100,6 +100,9 @@ lm2b = lmer(complexity ~ 1 + (1| book/chapter), data = d2)
 plot(compare_performance(lm1,lm1b))
 plot(compare_performance(lm2,lm2b))
 
+test_bf(lm1b,lm1)
+test_bf(lm2b,lm2)
+
 # -- viz -- #
 
 ## pca on variables
