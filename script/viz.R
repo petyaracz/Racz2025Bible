@@ -248,15 +248,21 @@ facet_labels = c(
   'normalised' = 'normalizált'
 )
 
+wcs = d |> 
+  filter(translation == 'Karoli', type == 'facsimile') |> 
+  distinct(book,chapter,wc) |> 
+  rename(word_count = wc)
+
 matthew_plots = d |> 
   filter(
     book == 'Mt', 
     chapter %in% 5:7,
     type != 'modern'
     ) |> 
+  left_join(wcs) |> 
   mutate(
-    work = fct_rev(work),
-    chapter2 = glue('Máté {chapter}')
+    work = fct_reorder(work, year),
+    chapter2 = glue('Máté {chapter}\n({word_count} szó)')
          ) |> 
   rename(
     bizonytalanság = perplexity,
