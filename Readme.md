@@ -1,4 +1,4 @@
-# Text density across mediaeval Hungarian translations of the Gospel
+# Text density across mediaeval Hungarian translations of the Gospels
 
 Rácz, Péter
 
