@@ -144,7 +144,7 @@ corplot = cors |>
   facet_wrap( ~ típus, strip.position='bottom')
 
 corplot
-ggsave('viz/gospel_varcorr_corplot.png', dpi = 900, height = 3, width = 9)
+ggsave('viz/gospel_varcorr_corplot.png', dpi = 900, height = 2.5, width = 9)
 
 ## pca on variables
 
