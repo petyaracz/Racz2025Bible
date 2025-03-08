@@ -105,6 +105,47 @@ test_bf(lm2b,lm2)
 
 # -- viz -- #
 
+## corrplot on variables
+
+cors = d |> 
+  magyarni() |> 
+  select(típus,bizonytalanság,összetettség,szószám,`típus/token`) |> 
+  nest(.by = típus) |> 
+  mutate(
+    cor = map(
+      data, 
+      ~ cor(.) |> 
+        as.data.frame() |> 
+        rownames_to_column(var = "Var1") %>%
+        pivot_longer(cols = -Var1, names_to = "Var2", values_to = "Korreláció")
+       )
+  ) |> 
+  select(-data) |> 
+  unnest(cor)
+
+corplot = cors |> 
+  mutate(
+    típus = factor(típus, levels = c('betűhű', 'normalizált', 'modern')),
+    Var1 = fct_inorder(Var1),
+    Var2 = fct_inorder(Var2) |> fct_rev()
+  ) |> 
+  ggplot(aes(Var1,Var2,fill = Korreláció, label = round(Korreláció,2))) +
+  geom_tile() +
+  geom_text(colour = 'white') +
+  theme_few() +
+  theme(
+    axis.title = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 0),
+    plot.margin = margin(5.5, 50, 5.5, 5.5)
+  ) +
+  guides(fill = 'none') +
+  scale_x_discrete(position = 'top') +
+  facet_wrap( ~ típus, strip.position='bottom')
+
+corplot
+ggsave('viz/gospel_varcorr_corplot.png', dpi = 900, height = 3, width = 9)
+
 ## pca on variables
 
 # drop modern texts, group by type, nest, build prcomp, build autoplot
