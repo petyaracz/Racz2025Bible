@@ -4,7 +4,11 @@ Rácz, Péter
 
 Tetszék énnékem is, ki eleitől fogva mindeneknek szorgalmasan végére jártam, hogy azokról rendszerint írjak néked, jó Theofilus / Hogy megtudhasd azoknak a dolgoknak bizonyosságát, a melyekre taníttatál. (Lk 1:3-4)
 
-## translations used
+## Calculator
+
+[practical entropy](https://petyaracz.shinyapps.io/perplexity_complexity_calculator/)
+
+## Translations used
 
 1. Müncheni kódex, 1466    
 2. Jordánszky kódex, 1516                        
@@ -20,7 +24,7 @@ Tetszék énnékem is, ki eleitől fogva mindeneknek szorgalmasan végére járt
 
 Misztótfalusi Kis Miklós not included, because only the normalised version is available (see below).
 
-## structure
+## Repo Structure
 
 - dat
 	- bible_matcher.tsv: descriptions from https://parallelbible.nytud.hu/
@@ -37,7 +41,7 @@ Misztótfalusi Kis Miklós not included, because only the normalised version is 
 	- gospel_stats_normalised.png: ~ normalised chapters
 	- predictions.png: model predictions
 
-## data dict
+## Data dictionary
 
 gospels.gz
 
@@ -59,7 +63,7 @@ gospel_entropy.tsv
  - type_count      : num ... chapter type count, ~
  - type_token_ratio: num ... chapter type / token ratio, ~
 
-## text densities
+## Text densities
 
 Text is either original / facsimile or normalised. Here's Mark 6:11.
 
@@ -84,6 +88,18 @@ Entropy is shaped by the size of the underlying vocabulary and text size as well
 Complexity is an approximation of Kolmogorov complexity, it is the length of the gzip-compressed form of each chapter.
 
 Wc is word count. Type / token ratio is the number of unique words divided by the number of words in each chapter.
+
+## Vis
+
+![Correlation of measures](viz/gospel_varcorr_corplot.png)
+
+![Measures: original](viz/gospel_stats_facsimile.png)
+
+![Measures: normalised](viz/gospel_stats_normalised.png)
+
+![Predictions](viz/gospel_preds.png)
+
+![Example](viz/gospel_matthew.png)
 
 ## References
 
