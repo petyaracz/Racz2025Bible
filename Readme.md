@@ -8,6 +8,9 @@ Tetszék énnékem is, ki eleitől fogva mindeneknek szorgalmasan végére járt
 
 [practical entropy](https://petyaracz.shinyapps.io/perplexity_complexity_calculator/)
 
+- More complex morphology results in higher text entropy: "én megyek", "mi megyünk" vs "I go", "we go"
+- More variable morphology results in higher text entropy: "én cselekedek", "én cselekszek", "én cselekedem", "én cselekszem" vs "I act"
+
 ## Translations used
 
 1. Müncheni kódex, 1466    
