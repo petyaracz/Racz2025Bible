@@ -4,6 +4,13 @@ Rácz, Péter
 
 Tetszék énnékem is, ki eleitől fogva mindeneknek szorgalmasan végére jártam, hogy azokról rendszerint írjak néked, jó Theofilus / Hogy megtudhasd azoknak a dolgoknak bizonyosságát, a melyekre taníttatál. (Lk 1:3-4)
 
+## Points
+
+1. Language entropy vs. text entropy
+2. Text entropy and morphology
+3. Holding the semantics constant: Bible translations
+4. Mediaeval Hungarian translations of the Gospel
+
 ## Calculator
 
 [practical entropy](https://petyaracz.shinyapps.io/perplexity_complexity_calculator/)
