@@ -7,9 +7,11 @@ Tetszék énnékem is, ki eleitől fogva mindeneknek szorgalmasan végére járt
 ## Points
 
 1. Language entropy vs. text entropy
-2. Text entropy and morphology
-3. Holding the semantics constant: Bible translations
-4. Mediaeval Hungarian translations of the Gospel
+2. Text entropy, semantics, and morphology
+3. Other measures of morphology: parsing
+4. Parsing is absent if the text is old and variable
+5. Holding the semantics constant in old texts: Bible translations
+6. Mediaeval Hungarian translations of the Gospel
 
 ## Calculator
 
