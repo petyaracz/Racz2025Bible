@@ -86,7 +86,8 @@ d = d |>
       str_replace('Bibliatársulat újfordítású', 'Bibliatársulat\nújfordítású') |> 
       str_replace('Gáspár Vizsolyi', 'Gáspár\nVizsolyi') |> 
       str_replace(', ', ',\n'),
-    work2 = fct_reorder(work2, -year)
+    work2 = fct_reorder(work2, -year),
+    work = fct_reorder(work, -year)
   )
 
 d2 = filter(d, type != 'facsimile')

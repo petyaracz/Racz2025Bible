@@ -1,0 +1,45 @@
+Ackerman, Farrell, and Robert Malouf. 2013. ‘Morphological Organization: The Low Conditional Entropy Conjecture’. Language 89 (3): 429–64.
+Atkinson, Mark, Simon Kirby, and Kenny Smith. 2015. ‘Speaker Input Variability Does Not Explain Why Larger Populations Have Simpler Languages’. PloS One 10 (6): e0129463. https://doi.org/10.1371/journal.pone.0129463.
+Bates, Douglas, Martin Maechler, and Ben Bolker. 2011. Lme4: Linear Mixed-Effects Models Using S4 Classes. http://CRAN.R-project.org/package=lme4.
+Beckner, Clay, Richard Blythe, Joan Bybee, Morten H Christiansen, William Croft, Nick C Ellis, John Holland, Jinyun Ke, Diane Larsen-Freeman, and Tom Schoenemann. 2009. ‘Language Is a Complex Adaptive System: Position Paper’. Language Learning 59:1–26.
+Bentz, Christian, Tatyana Ruzsics, Alexander Koplenig, and Tanja Samardzic. 2016. ‘A Comparison between Morphological Complexity Measures: Typological Data vs. Language Corpora’. In Proceedings of the Workshop on Computational Linguistics for Linguistic Complexity (CL4LC), 142–53.
+Bloomfield, Leonard. 1933. Language. Henry Holt.
+Dębowski, Łukasz, and Christian Bentz. 2020. ‘Information Theory and Language’. Entropy. MDPI.
+Dye, Melody, Petar Milin, Richard Futrell, and Michael Ramscar. 2018. ‘Alternative Solutions to a Language Design Problem: The Role of Adjectives and Gender Marking in Efficient Communication’. Topics in Cognitive Science 10 (1): 209–24.
+Erdős, József. 1906. Az Újszövetségi Kánon Fordításairól. Bpest: Franklin-Társulat ny.
+Fügedi, Erik. 1992. ‘A Középkori Magyarország Történeti Demográfiája’. Történeti Demográfiai Füzetek (1985-1997), no. 10.
+Gailly, Jean-loup, and Mark Adler. 1992. ‘Gnu Gzip’. GNU Operating System, 8–18.
+Gelman, Andrew, and Jennifer Hill. 2006. Data Analysis Using Regression and Multilevel/Hierarchical Models. Cambridge university press.
+Gibson, Edward, Richard Futrell, Steven P Piantadosi, Isabelle Dautriche, Kyle Mahowald, Leon Bergen, and Roger Levy. 2019. ‘How Efficiency Shapes Human Language’. Trends in Cognitive Sciences 23 (5): 389–407.
+Hausser, Jean, and Korbinian Strimmer. 2021. Entropy: Estimation of Entropy, Mutual Information and Related Quantities. https://CRAN.R-project.org/package=entropy.
+Hegedüs, Béla. 2013. ‘János Evangéliumának Eleje Hat Bibliafordításunkban’.
+Holland, Tom. 2019. Dominion: The Making of the Western Mind. Hachette UK.
+Károly, Erdős. 1937. ‘Az Újszövetség Magyar Fordításai a Reformáció Óta’. Debrecen: Debreceni Egyetem, Újszövetségi Füzetek 1 (1): 7.
+Kiss, Jen\Ho, and Ferenc Pusztai. 2003. ‘Magyar Nyelvtörténet [History of the Hungarian Language]’. Budapest: Osiris Kiadó.
+Kobayashi, Hayato. 2014. ‘Perplexity on Reduced Corpora’. In Proceedings of the 52nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), 797–806.
+Korompay, Klára. 2015. ‘Gondolatok Egy Régi-Új Vitához: Az Ún. Huszita Biblia Eredetének Kérdésköre’. A Nyelv Dimenziói.
+Lupyan, Gary, and Rick Dale. 2010. ‘Language Structure Is Partly Determined by Social Structure’. PloS One 5 (1): e8559.
+M. Pintér, Tibor. 2024. ‘Magyar Nyelvű Bibliafordítások Statisztikai Elemzése’. Alkalmazott Nyelvtudomány, Különszám 2024/1 (1): 22–36. http://dx.doi.org/10.18460/ANY.K.2024.1.002.
+Madas, Edit. 1998. ‘Középkori Bibliafordításainkról’. Iskolakultúra 8 (1): 48–54.
+Máthé, Dénes. 2004. ‘Heltai Gáspár Nyelvhasználati Sajátosságairól’. Keresztény Magvető 110 (4): 428.
+Ming, LI, and Paul MB Vitányi. 1990. ‘Kolmogorov Complexity and Its Applications’. In Algorithms and Complexity, 187–254. Elsevier.
+Moscoso del Prado, Fermin. 2013. ‘The Missing Baselines in Arguments for the Optimal Efficiency of Languages’. In Proceedings of the Annual Meeting of the Cognitive Science Society. Vol. 35.
+Nádor, Orsolya. 2000. ‘A Magyar Nyelv Státusának Változásai a Honfoglalástól a XIX. Század Közepéig’. Hungarológiai Évkönyv, 54.
+Nettle, Daniel. 2012. ‘Social Scale and Structural Complexity in Human Languages’. Phil. Trans. R. Soc. B 367 (1597): 1829–36. https://doi.org/10.1098/rstb.2011.0216.
+Piantadosi, Steven T, Harry Tily, and Edward Gibson. 2011. ‘Word Lengths Are Optimized for Efficient Communication’. Proceedings of the National Academy of Sciences 108 (9): 3526–29.
+R Core Team. 2025. R: A Language and Environment for Statistical Computing. Vienna, Austria: R Foundation for Statistical Computing. https://www.R-project.org/.
+Raviv, Limor, Antje Meyer, and Shiri Lev-Ari. 2019. ‘Larger Communities Create More Systematic Languages’. Proceedings of the Royal Society B 286 (1907): 20191262.
+Resnik, Philip, Mari Broman Olsen, and Mona Diab. 1999. ‘The Bible as a Parallel Corpus: Annotating the “Book of 2000 Tongues”’. Computers and the Humanities 33:129–53.
+Ruden, Sarah. 2023. The Gospels: A New Translation. Modern Library.
+Sapir, Edward. 1912. ‘Language and Environment’. American Anthropologist 14 (2): 226–42.
+Saussure, Ferdinand de. 1916. ‘Cours de Linguistique Générale’. Payot, Lausanne-Paris.
+Shannon, Claude Elwood. 1948. ‘A Mathematical Theory of Communication’. Bell System Technical Journal 27 (3): 379–423. https://doi.org/10.1002/j.1538-7305.1948.tb00917.x.
+Shcherbakova, Olena, Susanne Maria Michaelis, Hannah J Haynie, Sam Passmore, Volker Gast, Russell D Gray, Simon J Greenhill, Damián E Blasi, and Hedvig Skirgård. 2023. ‘Societies of Strangers Do Not Speak Less Complex Languages’. Science Advances 9 (33): eadf7704.
+Simon, Eszter, and Ágnes Kalivoda. 2020. ‘A Párhuzamos Bibliakorpusz És Bibliaolvasó Fejlesztése’. In Általános Nyelvészeti Tanulmányok 32.
+Simon, Eszter, and Bálint Sass. 2012. ‘Nyelvtechnológia És Kulturális Örökség, Avagy Korpuszépítés Ómagyar Kódexekből’. In Általános Nyelvészeti Tanulmányok XXIV.: Nyelvtechnológiai Kutatások, edited by István Kenesei, Gábor Prószéky, and Tamás Váradi, 243–64. Budapest: Akadémiai Kiadó.
+Szabó, Flóris. 1989. ‘Huszita-e a Huszita Biblia’. Bírálat És Útkeresés. Irodalomtörténeti Közlemények 93:118–26.
+Vadász, Noémi, and Eszter Simon. 2018. ‘NORMO: An Automatic Normalization Tool for Middle Hungarian’. In Proceedings of the Second Workshop on Corpus-Based Research in the Humanities, 227–36.
+Weinreich, Uriel, William Labov, and Marvin Herzog. 1968. Empirical Foundations for a Theory of Language Change. University of Texas Press.
+Zeeh, Christina. 2003. ‘The Lempel Ziv Algorithm’. In Famous Algorithms: Http://Tuxtina. de/Files/Seminar/LempelZiv. Pdf.
+Zipf, George. 1936. The Psychobiology of Language. London: Routledge.
+Zvara, Edina. 2017. ‘Előszó’. In Sylvester János, Új Testamentum, Sárvár, 1541, Fakszimile Kiadás. Budapest: Kossuth Kiadó–MTA Könyvtár és Információs Központ.
