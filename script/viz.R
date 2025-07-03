@@ -24,8 +24,8 @@ magyarni = function(dat){
       )
     ) |> 
     rename(
-      'bizonytalanság' = perplexity,
-      'összetettség' = complexity,
+      'bigram entrópia' = bigram_perplexity,
+      'MDL/DL' = mdl_over_dl,
       'szószám' = wc,
       'típus/token' = type_token_ratio,
       'betűhű/normalizált' = chapter_diff
@@ -75,6 +75,11 @@ drawCor = function(d_cor,col1,col2){
 
 d = read_tsv('dat/gospel_entropy.tsv')
 
+lm1 = readRDS('models/lm1.rds')
+lm2 = readRDS('models/lm2.rds')
+lm3 = readRDS('models/lm3.rds')
+lm4 = readRDS('models/lm4.rds')
+
 # -- setup -- #
 
 d = d |> 
@@ -87,30 +92,19 @@ d = d |>
       str_replace('Gáspár Vizsolyi', 'Gáspár\nVizsolyi') |> 
       str_replace(', ', ',\n'),
     work2 = fct_reorder(work2, -year),
-    work = fct_reorder(work, -year)
+    work = fct_reorder(work, -year),
+    work3 = ordered(work)
   )
 
 d2 = filter(d, type != 'facsimile')
-
-lm1 = lmer(perplexity ~ work + (1| book/chapter), data = d2)
-lm2 = lmer(complexity ~ work + (1| book/chapter), data = d2)
-
-lm1b = lmer(perplexity ~ 1 + (1| book/chapter), data = d2)
-lm2b = lmer(complexity ~ 1 + (1| book/chapter), data = d2)
-
-plot(compare_performance(lm1,lm1b))
-plot(compare_performance(lm2,lm2b))
-
-test_bf(lm1b,lm1)
-test_bf(lm2b,lm2)
 
 # -- viz -- #
 
 ## corrplot on variables
 
 cors = d |> 
-  magyarni() |> 
-  select(típus,bizonytalanság,összetettség,szószám,`típus/token`) |> 
+  magyarni() |>
+  select(típus,`MDL/DL`,`típus/token`,szószám,`bigram entrópia`) |> 
   nest(.by = típus) |> 
   mutate(
     cor = map(
@@ -152,7 +146,7 @@ ggsave('viz/gospel_varcorr_corplot.png', dpi = 900, height = 2.5, width = 9)
 # drop modern texts, group by type, nest, build prcomp, build autoplot
 prcomps = d |> 
   magyarni() |> 
-  select(típus,bizonytalanság,összetettség,szószám,`típus/token`) |> 
+  select(típus,`bigram entrópia`,`MDL/DL`,szószám,`típus/token`) |> 
   nest(.by = típus) |> 
   mutate(
     prcomp = map(
@@ -184,15 +178,15 @@ ggsave('viz/gospel_varcorr.png', dpi = 900, width = 9.4, height = 3)
 
 p11 = d |> 
   filter(type == 'facsimile') |> 
-  ridgePlot(work2,perplexity) +
-  xlab('bizonytalansági\neloszlások') +
-  ggtitle('betűhű szövegek')
+  ridgePlot(work2,bigram_perplexity) +
+  xlab('bigram entrópia\neloszlások') +
+  ggtitle('betűhű szövegek') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
 p12 = d |> 
   filter(type == 'facsimile') |> 
-  ridgePlot(work2,complexity) +
-  xlab('összetettségi\neloszlások') +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+  ridgePlot(work2,mdl_over_dl) +
+  xlab('MDL/DL\neloszlások')
 
 p13 = d |> 
   filter(type == 'facsimile') |> 
@@ -209,27 +203,27 @@ p14 = d |>
 p15 = d |> 
   filter(type == 'facsimile') |> 
   ridgePlot(work2,chapter_diff) +
-  xlab('betűhű-normalizált\ntávolság') +
+  xlab('betűhű-normalizált\nközelség') +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-wrap_plots(p11,p12,p13,p14,p15, nrow = 1)
+wrap_plots(p12,p14,p13,p11,p15, nrow = 1)
 ggsave('viz/gospel_stats_facsimile.png', dpi = 900, width = 10, height = 5)
 
 ## normalised
 
 p21 = d |> 
   filter(type != 'facsimile') |> 
-  ridgePlot(work2,perplexity) +
+  ridgePlot(work2,bigram_perplexity) +
+  xlab('bigram entrópia\neloszlások') +
   geom_hline(yintercept = 5, lty = 3) +
-  xlab('bizonytalansági\neloszlások') +
-  ggtitle('normalizált szövegek')
+  ggtitle('normalizált szövegek') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
 p22 = d |> 
   filter(type != 'facsimile') |> 
-  ridgePlot(work2,complexity) +
+  ridgePlot(work2,mdl_over_dl) +
   geom_hline(yintercept = 5, lty = 3) +
-  xlab('összetettségi\neloszlások') +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+  xlab('MDL/DL\neloszlások')
 
 p23 = d |> 
   filter(type != 'facsimile') |> 
@@ -245,27 +239,17 @@ p24 = d |>
   xlab('típus/token arány\neloszlások') +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-wrap_plots(p21,p22,p23,p24, nrow = 1)
+wrap_plots(p22,p24,p23,p21, nrow = 1)
 ggsave('viz/gospel_stats_normalised.png', dpi = 900, width = 9, height = 6.5)
 
 ## pred
 
 r21 = round(r2(lm1)[[2]],2)
 r22 = round(r2(lm2)[[2]],2)
+r23 = round(r2(lm3)[[2]],2)
+r24 = round(r2(lm4)[[2]],2)
 
-p31 = plot_model(lm1, 'pred', terms = 'work') +
-  coord_flip() +
-  theme_minimal() +
-  theme(
-    axis.title.y = element_blank(),
-    panel.grid.major.y = element_blank(),  # Remove major horizontal grid lines
-    panel.grid.minor.y = element_blank()   # Remove minor horizontal grid lines
-  ) +
-  ylab(glue('bizonytalanság (m. r2 = {r21})')) +
-  ggtitle('jósolt értékek (normalizált / modern szövegek)') +
-  geom_vline(xintercept = 4.5, lty = 3)
-
-p32 = plot_model(lm2, 'pred', terms = 'work') +
+p31 = plot_model(lm1, 'pred', terms = 'work3') +
   coord_flip() +
   theme_minimal() +
   theme(
@@ -276,14 +260,57 @@ p32 = plot_model(lm2, 'pred', terms = 'work') +
     panel.grid.minor.y = element_blank(),   # Remove minor horizontal grid lines
     plot.title = element_blank()
   ) +
-  ylab(glue('összetettség (m. r2 = {r22})')) +
+  ylab(glue('bigram entrópia (m. r2 = {r21})')) +
+  ggtitle('jósolt értékek (normalizált / modern szövegek)') +
   geom_vline(xintercept = 4.5, lty = 3)
 
-p31 + p32
+p32 = plot_model(lm2, 'pred', terms = 'work3') +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    axis.title.y = element_blank(),
+    panel.grid.major.y = element_blank(),  # Remove major horizontal grid lines
+    panel.grid.minor.y = element_blank()   # Remove minor horizontal grid lines
+  ) +
+  ylab(glue('MDL/DL (m. r2 = {r22})')) +
+  ggtitle('jósolt értékek (normalizált / modern szövegek)') +
+  geom_vline(xintercept = 4.5, lty = 3)
 
-ggsave('viz/gospel_preds.png', dpi = 900, width = 7, height = 4)
+p33 = plot_model(lm3, 'pred', terms = 'work3') +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.major.y = element_blank(),  # Remove major horizontal grid lines
+    panel.grid.minor.y = element_blank(),   # Remove minor horizontal grid lines
+    plot.title = element_blank()
+  ) +
+  ylab(glue('típus/token arány (m. r2 = {r23})')) +
+  ggtitle('jósolt értékek (normalizált / modern szövegek)') +
+  geom_vline(xintercept = 4.5, lty = 3)
 
-# -- brainrot -- #
+p34 = plot_model(lm4, 'pred', terms = 'work3') +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.major.y = element_blank(),  # Remove major horizontal grid lines
+    panel.grid.minor.y = element_blank(),   # Remove minor horizontal grid lines
+    plot.title = element_blank()
+  ) +
+  ylab(glue('szószám (m. r2 = {r24})')) +
+  ggtitle('jósolt értékek (normalizált / modern szövegek)') +
+  geom_vline(xintercept = 4.5, lty = 3)
+
+p32 | p33 | p34 | p31
+
+ggsave('viz/gospel_preds.png', dpi = 900, width = 12, height = 4)
+
+# -- example -- #
 
 facet_labels = c(
   'facsimile' = 'betűhű',
@@ -307,10 +334,10 @@ matthew_plots = d |>
     chapter2 = glue('Máté {chapter}\n({word_count} szó)')
          ) |> 
   rename(
-    bizonytalanság = perplexity,
-    összetettség = complexity
+    `bigram entrópia` = bigram_perplexity,
+    `MDL/DL` = mdl_over_dl
   ) |> 
-  select(work,type,chapter2,bizonytalanság,összetettség) |> 
+  select(work,type,chapter2,`bigram entrópia`,`MDL/DL`) |> 
   pivot_longer(-c(work,type,chapter2)) |> 
   nest(.by = c(name)) |> 
   mutate(

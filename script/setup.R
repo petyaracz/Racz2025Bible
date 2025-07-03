@@ -13,24 +13,21 @@ setwd('~/Github/Racz2025Bible/')
 # -- fun -- #
 
 # function to calculate Shannon entropy and perplexity
-calculateEntropy = function(df) {
+calculateBigramEntropy = function(df) {
   df |>
-    # calculate the frequency of each word
-    count(word) |> 
-    # convert to p 
-    mutate(
-      p = n / sum(n)
-    ) |> 
+    unnest_tokens(bigram, text, token = "ngrams", n = 2) |>
+    count(bigram) |>
+    mutate(p = n / sum(n)) |>
     summarise(
-      entropy = entropy(p, unit = "log2"),
-      perplexity = 2^entropy
+      bigram_entropy = -sum(p * log2(p)),
+      bigram_perplexity = 2^bigram_entropy
     )
 }
 
-# function to calculate Kolmogorov complexity
-calculateComplexity = function(text){
+# function to calculate MDL / DL
+calculateMDLoverDL = function(text){
   text_compressed = memCompress(text, type = 'gzip')
-  length(text_compressed)
+  length(text_compressed) / nchar(text)
 }
 
 # -- read -- #
@@ -44,13 +41,23 @@ d = read_tsv('dat/gospels.gz')
 # range(d$chapter)
 # range(d$verse)
 
-# -- entropy and perplexity -- #
+# -- clean up text -- #
+
+# lowercase, no punctuation
+d = d |> 
+  mutate(
+    text = text |> 
+      str_to_lower() |> 
+      str_remove_all("[[:punct:]]")
+  )
+
+# -- bigram entropy and mdl / dl -- #
 
 ed = d |> 
   unnest_tokens(word, text, drop = F) |> 
   nest(.by = c(file_name,work,translation,year,description,analysis_original,analysis_normalised,type,book,chapter)) |> 
   mutate(
-    entropy_data = map(data, calculateEntropy)
+    entropy_data = map(data, calculateBigramEntropy)
   ) |> 
   unnest(entropy_data)
 
@@ -63,9 +70,9 @@ cd = d |>
               ) |> 
   rowwise() |> 
   mutate(
-    complexity = calculateComplexity(chapter2)
+    mdl_over_dl = calculateMDLoverDL(chapter2)
   ) |> 
-  ungroup() 
+  ungroup()
   
 # -- descriptive stats -- #
 
@@ -110,12 +117,12 @@ combined = ed |>
 
 c1 = combined |> 
   filter(type == 'facsimile', period != 'modern') |> 
-  select(work,year,book,chapter,perplexity,complexity,wc,type_token_ratio) |> 
+  select(work,year,book,chapter,bigram_perplexity,mdl_over_dl,wc,type_token_ratio) |> 
   rename_with(~ paste0(., "_orig"), -c(work,year,book,chapter))
 
 c2 = combined |> 
   filter(type == 'normalised', period != 'modern') |> 
-  select(work,year,book,chapter,perplexity,complexity,wc,type_token_ratio) |> 
+  select(work,year,book,chapter,bigram_perplexity,mdl_over_dl,wc,type_token_ratio) |> 
   rename_with(~ paste0(., "_norm"), -c(work,year,book,chapter))
 
 c3 = left_join(c1,c2)
