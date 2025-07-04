@@ -95,7 +95,8 @@ d = d |>
       str_replace(', ', ',\n'),
     work2 = fct_reorder(work2, -year),
     work = fct_reorder(work, -year),
-    work3 = ordered(work)
+    work3 = ordered(work),
+    chapter_sim = 1-chapter_diff
   )
 
 d2 = filter(d, type != 'facsimile')
@@ -155,7 +156,7 @@ prcomps = d |>
       data, 
       ~ prcomp(., center = TRUE, scale. = TRUE)
       ),
-    autoplot = pmap(
+    autoplot12 = pmap(
       list(prcomp, data, típus), 
       ~ autoplot(
           ..1, 
@@ -168,13 +169,41 @@ prcomps = d |>
           label.size = 0
         ) + 
         ggtitle(..3) + 
-        theme_few()
-      )
-  ) |> 
-  pull(autoplot)
+        theme_few() +
+        theme(
+          axis.title.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.x = element_blank()
+              )
+      ),
+    autoplot13 = pmap(
+      list(prcomp, data, típus), 
+      ~ autoplot(
+        ..1, 
+        data = ..2, 
+        loadings = TRUE, 
+        loadings.label = TRUE, 
+        loadings.colour = 'lightgrey', 
+        loadings.label.size = 3, 
+        shape = FALSE, 
+        label.size = 0,
+        y = 3
+      ) + 
+        ggtitle(..3) + 
+        theme_few() +
+        theme(
+          plot.title = element_blank()
+        )
+    )
+  )
 
-wrap_plots(prcomps)
-ggsave('viz/gospel_varcorr.png', dpi = 900, width = 9.5, height = 5)
+prcomps12 = pull(prcomps,autoplot12)
+prcomps13 = pull(prcomps,autoplot13)
+
+pc1 = wrap_plots(prcomps12)
+pc2 = wrap_plots(prcomps13)
+pc1 / pc2
+ggsave('viz/gospel_varcorr.png', dpi = 900, width = 10, height = 10)
 
 ## facsimile: stats
 
@@ -210,7 +239,7 @@ p15 = d |>
   
 p16 = d |> 
   filter(type == 'facsimile') |> 
-  ridgePlot(work2,chapter_diff) +
+  ridgePlot(work2,chapter_sim) +
   xlab('betűhű-normalizált\nközelség') +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
@@ -265,7 +294,7 @@ r23 = round(r2(lm3)[[2]],2)
 r24 = round(r2(lm4)[[2]],2)
 r25 = round(r2(lm5)[[2]],2)
 
-p31 = plot_model(lm1, 'pred', terms = 'work3') +
+p31 = plot_model(lm1, 'pred', terms = 'work3', ci.lvl = .99) +
   coord_flip() +
   theme_minimal() +
   theme(
@@ -277,7 +306,7 @@ p31 = plot_model(lm1, 'pred', terms = 'work3') +
   ggtitle('jósolt értékek (normalizált / modern szövegek)') +
   geom_vline(xintercept = 4.5, lty = 3)
 
-p32 = plot_model(lm2, 'pred', terms = 'work3') +
+p32 = plot_model(lm2, 'pred', terms = 'work3', ci.lvl = .99) +
   coord_flip() +
   theme_minimal() +
   theme(
@@ -292,7 +321,7 @@ p32 = plot_model(lm2, 'pred', terms = 'work3') +
   ggtitle('jósolt értékek (normalizált / modern szövegek)') +
   geom_vline(xintercept = 4.5, lty = 3)
 
-p33 = plot_model(lm3, 'pred', terms = 'work3') +
+p33 = plot_model(lm3, 'pred', terms = 'work3', ci.lvl = .99) +
   coord_flip() +
   theme_minimal() +
   theme(
@@ -307,7 +336,7 @@ p33 = plot_model(lm3, 'pred', terms = 'work3') +
   ggtitle('jósolt értékek (normalizált / modern szövegek)') +
   geom_vline(xintercept = 4.5, lty = 3)
 
-p34 = plot_model(lm4, 'pred', terms = 'work3') +
+p34 = plot_model(lm4, 'pred', terms = 'work3', ci.lvl = .99) +
   coord_flip() +
   theme_minimal() +
   theme(
@@ -322,7 +351,7 @@ p34 = plot_model(lm4, 'pred', terms = 'work3') +
   ggtitle('jósolt értékek (normalizált / modern szövegek)') +
   geom_vline(xintercept = 4.5, lty = 3)
 
-p35 = plot_model(lm5, 'pred', terms = 'work3') +
+p35 = plot_model(lm5, 'pred', terms = 'work3', ci.lvl = .99) +
   coord_flip() +
   theme_minimal() +
   theme(

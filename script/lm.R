@@ -1,9 +1,11 @@
 # -- head -- #
 
+library(mgcv)
 library(tidyverse)
 library(lme4)
 library(performance)
 library(sjPlot)
+
 
 setwd('~/Github/Racz2025Bible/')
 
@@ -29,6 +31,8 @@ d = d |>
 
 d2 = filter(d, type != 'facsimile')
 
+# -- fit -- #
+
 lm1 = lmer(bigram_perplexity ~ work3 + (1| book/chapter), data = d2)
 lm2 = lmer(mdl_over_dl ~ work3 + (1| book/chapter), data = d2)
 lm3 = lmer(type_token_ratio ~ work3 + (1| book/chapter), data = d2)
@@ -40,6 +44,29 @@ lm2b = lmer(mdl_over_dl ~ (1| book/chapter), data = d2)
 lm3b = lmer(type_token_ratio ~ (1| book/chapter), data = d2)
 lm4b = lmer(unigram_perplexity ~ (1| book/chapter), data = d2)
 lm5b = lmer(wc ~ (1| book/chapter), data = d2)
+
+d2 = d2 |> 
+  mutate(
+    book_chapter = as.factor(glue('{book} {chapter}')),
+    work_rank = as.double(work2)
+  )
+
+d2 |> 
+  distinct(work_rank,work)
+
+ord1 = gam(work_rank ~ 
+             s(bigram_perplexity, k = 3) + 
+             s(mdl_over_dl, k = 3) + 
+             # type_token_ratio + 
+             s(unigram_perplexity, k = 3) + 
+             # wc + 
+             s(book_chapter, bs = 're'), 
+             data = d2,
+             family = ocat(R=11),
+             method = 'ML'
+          )
+
+# -- check -- #
 
 plot(compare_performance(lm1,lm1b))
 plot(compare_performance(lm2,lm2b))
@@ -58,6 +85,11 @@ plot_model(lm2, 'pred', terms = 'work3')
 plot_model(lm3, 'pred', terms = 'work3')
 plot_model(lm4, 'pred', terms = 'work3')
 plot_model(lm5, 'pred', terms = 'work3')
+
+check_collinearity(ord1)
+plot_model(ord1, 'pred', terms = 'bigram_perplexity')
+plot_model(ord1, 'pred', terms = 'unigram_perplexity')
+plot_model(ord1, 'pred', terms = 'mdl_over_dl')
 
 # -- write -- #
 
