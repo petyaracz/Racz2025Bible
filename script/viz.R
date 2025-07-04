@@ -24,6 +24,7 @@ magyarni = function(dat){
       )
     ) |> 
     rename(
+      'unigram entrópia' = unigram_perplexity,
       'bigram entrópia' = bigram_perplexity,
       'MDL/DL' = mdl_over_dl,
       'szószám' = wc,
@@ -79,6 +80,7 @@ lm1 = readRDS('models/lm1.rds')
 lm2 = readRDS('models/lm2.rds')
 lm3 = readRDS('models/lm3.rds')
 lm4 = readRDS('models/lm4.rds')
+lm5 = readRDS('models/lm5.rds')
 
 # -- setup -- #
 
@@ -104,7 +106,7 @@ d2 = filter(d, type != 'facsimile')
 
 cors = d |> 
   magyarni() |>
-  select(típus,`MDL/DL`,`típus/token`,szószám,`bigram entrópia`) |> 
+  select(típus,`bigram entrópia`,`MDL/DL`,`típus/token`,`unigram entrópia`,szószám) |> 
   nest(.by = típus) |> 
   mutate(
     cor = map(
@@ -139,14 +141,14 @@ corplot = cors |>
   facet_wrap( ~ típus, strip.position='bottom')
 
 corplot
-ggsave('viz/gospel_varcorr_corplot.png', dpi = 900, height = 2.5, width = 9)
+ggsave('viz/gospel_varcorr_corplot.png', dpi = 900, height = 2.5, width = 10)
 
 ## pca on variables
 
 # drop modern texts, group by type, nest, build prcomp, build autoplot
 prcomps = d |> 
   magyarni() |> 
-  select(típus,`bigram entrópia`,`MDL/DL`,szószám,`típus/token`) |> 
+  select(típus,`bigram entrópia`,`MDL/DL`,`típus/token`,`unigram entrópia`,szószám) |>
   nest(.by = típus) |> 
   mutate(
     prcomp = map(
@@ -172,7 +174,7 @@ prcomps = d |>
   pull(autoplot)
 
 wrap_plots(prcomps)
-ggsave('viz/gospel_varcorr.png', dpi = 900, width = 9.4, height = 3)
+ggsave('viz/gospel_varcorr.png', dpi = 900, width = 9.5, height = 5)
 
 ## facsimile: stats
 
@@ -180,34 +182,40 @@ p11 = d |>
   filter(type == 'facsimile') |> 
   ridgePlot(work2,bigram_perplexity) +
   xlab('bigram entrópia\neloszlások') +
-  ggtitle('betűhű szövegek') +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+  ggtitle('betűhű szövegek')
 
 p12 = d |> 
   filter(type == 'facsimile') |> 
   ridgePlot(work2,mdl_over_dl) +
-  xlab('MDL/DL\neloszlások')
+  xlab('MDL/DL\neloszlások') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
 p13 = d |> 
   filter(type == 'facsimile') |> 
-  ridgePlot(work2,wc) +
-  xlab('szószám\neloszlások') +
+  ridgePlot(work2,type_token_ratio) +
+  xlab('típus/token\neloszlások') +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
 p14 = d |> 
   filter(type == 'facsimile') |> 
-  ridgePlot(work2,type_token_ratio) +
-  xlab('típus/token arány\neloszlások') +
+  ridgePlot(work2,unigram_perplexity) +
+  xlab('unigram entrópia\neloszlások') +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
 p15 = d |> 
+  filter(type == 'facsimile') |> 
+  ridgePlot(work2,wc) +
+  xlab('szószám\neloszlások') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+  
+p16 = d |> 
   filter(type == 'facsimile') |> 
   ridgePlot(work2,chapter_diff) +
   xlab('betűhű-normalizált\nközelség') +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-wrap_plots(p12,p14,p13,p11,p15, nrow = 1)
-ggsave('viz/gospel_stats_facsimile.png', dpi = 900, width = 10, height = 5)
+wrap_plots(p11,p12,p13,p14,p15,p16, nrow = 1)
+ggsave('viz/gospel_stats_facsimile.png', dpi = 900, width = 12, height = 5)
 
 ## normalised
 
@@ -216,31 +224,38 @@ p21 = d |>
   ridgePlot(work2,bigram_perplexity) +
   xlab('bigram entrópia\neloszlások') +
   geom_hline(yintercept = 5, lty = 3) +
-  ggtitle('normalizált szövegek') +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+  ggtitle('normalizált szövegek')
 
 p22 = d |> 
   filter(type != 'facsimile') |> 
   ridgePlot(work2,mdl_over_dl) +
   geom_hline(yintercept = 5, lty = 3) +
-  xlab('MDL/DL\neloszlások')
-
-p23 = d |> 
-  filter(type != 'facsimile') |> 
-  ridgePlot(work2,wc) +
-  geom_hline(yintercept = 5, lty = 3) +
-  xlab('szószám\neloszlások') +
+  xlab('MDL/DL\neloszlások') +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-p24 = d |> 
+p23 = d |> 
   filter(type != 'facsimile') |> 
   ridgePlot(work2,type_token_ratio) +
   geom_hline(yintercept = 5, lty = 3) +
   xlab('típus/token arány\neloszlások') +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-wrap_plots(p22,p24,p23,p21, nrow = 1)
-ggsave('viz/gospel_stats_normalised.png', dpi = 900, width = 9, height = 6.5)
+p24 = d |> 
+  filter(type != 'facsimile') |> 
+  ridgePlot(work2,unigram_perplexity) +
+  xlab('unigram entrópia\neloszlások') +
+  geom_hline(yintercept = 5, lty = 3) +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+
+p25 = d |> 
+  filter(type != 'facsimile') |> 
+  ridgePlot(work2,wc) +
+  geom_hline(yintercept = 5, lty = 3) +
+  xlab('szószám\neloszlások') +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+
+wrap_plots(p21,p22,p23,p24,p25, nrow = 1)
+ggsave('viz/gospel_stats_normalised.png', dpi = 900, width = 10, height = 6.5)
 
 ## pred
 
@@ -248,17 +263,15 @@ r21 = round(r2(lm1)[[2]],2)
 r22 = round(r2(lm2)[[2]],2)
 r23 = round(r2(lm3)[[2]],2)
 r24 = round(r2(lm4)[[2]],2)
+r25 = round(r2(lm5)[[2]],2)
 
 p31 = plot_model(lm1, 'pred', terms = 'work3') +
   coord_flip() +
   theme_minimal() +
   theme(
     axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank(),
     panel.grid.major.y = element_blank(),  # Remove major horizontal grid lines
-    panel.grid.minor.y = element_blank(),   # Remove minor horizontal grid lines
-    plot.title = element_blank()
+    panel.grid.minor.y = element_blank()   # Remove minor horizontal grid lines
   ) +
   ylab(glue('bigram entrópia (m. r2 = {r21})')) +
   ggtitle('jósolt értékek (normalizált / modern szövegek)') +
@@ -269,8 +282,11 @@ p32 = plot_model(lm2, 'pred', terms = 'work3') +
   theme_minimal() +
   theme(
     axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
     panel.grid.major.y = element_blank(),  # Remove major horizontal grid lines
-    panel.grid.minor.y = element_blank()   # Remove minor horizontal grid lines
+    panel.grid.minor.y = element_blank(),   # Remove minor horizontal grid lines
+    plot.title = element_blank()
   ) +
   ylab(glue('MDL/DL (m. r2 = {r22})')) +
   ggtitle('jósolt értékek (normalizált / modern szövegek)') +
@@ -302,13 +318,28 @@ p34 = plot_model(lm4, 'pred', terms = 'work3') +
     panel.grid.minor.y = element_blank(),   # Remove minor horizontal grid lines
     plot.title = element_blank()
   ) +
-  ylab(glue('szószám (m. r2 = {r24})')) +
+  ylab(glue('unigram entrópia (m. r2 = {r24})')) +
   ggtitle('jósolt értékek (normalizált / modern szövegek)') +
   geom_vline(xintercept = 4.5, lty = 3)
 
-p32 | p33 | p34 | p31
+p35 = plot_model(lm5, 'pred', terms = 'work3') +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    axis.title.y = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.major.y = element_blank(),  # Remove major horizontal grid lines
+    panel.grid.minor.y = element_blank(),   # Remove minor horizontal grid lines
+    plot.title = element_blank()
+  ) +
+  ylab(glue('szószám (m. r2 = {r25})')) +
+  ggtitle('jósolt értékek (normalizált / modern szövegek)') +
+  geom_vline(xintercept = 4.5, lty = 3)
 
-ggsave('viz/gospel_preds.png', dpi = 900, width = 12, height = 4)
+p31 | p32 | p33 | p34 | p35
+
+ggsave('viz/gospel_preds.png', dpi = 900, width = 13, height = 4)
 
 # -- example -- #
 
@@ -335,9 +366,12 @@ matthew_plots = d |>
          ) |> 
   rename(
     `bigram entrópia` = bigram_perplexity,
-    `MDL/DL` = mdl_over_dl
+    `MDL/DL` = mdl_over_dl,
+    `típus/token` = type_token_ratio,
+    `unigram entrópia` = unigram_perplexity,
+    szószám = wc
   ) |> 
-  select(work,type,chapter2,`bigram entrópia`,`MDL/DL`) |> 
+  select(work,type,chapter2,`bigram entrópia`,`MDL/DL`,`típus/token`,`unigram entrópia`,szószám) |> 
   pivot_longer(-c(work,type,chapter2)) |> 
   nest(.by = c(name)) |> 
   mutate(
@@ -366,5 +400,5 @@ matthew_plots = d |>
   ) |> 
   pull(plot)
   
-wrap_plots(matthew_plots) + plot_layout(guides = 'collect') & theme(legend.position = 'left')
-ggsave('viz/gospel_matthew.png', dpi = 900, width = 7, height = 4)
+wrap_plots(matthew_plots, nrow = 1) + plot_layout(guides = 'collect') & theme(legend.position = 'left')
+ggsave('viz/gospel_matthew.png', dpi = 900, width = 10, height = 4)

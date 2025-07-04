@@ -2,3 +2,4 @@ replace perplexity with bigram perplexity and call it bigram entropy check
 replace complexity with minimum description length / description length and call it MDL / DL check
 checked tidytext: removes punctuation and splits on whitespace, converting text to lowercase check
 rerun linear models with all outcomes, also with work as ordered factor check
+add unigram entropy so the five measures are uni, bi entropy, mdl/dl t/t and wc x
